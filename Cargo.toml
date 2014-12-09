@@ -1,0 +1,10 @@
+[package]
+name = "tars"
+version = "0.0.1"
+description = "Data structure containers with protected memory"
+license = "MIT/ASL2"
+readme = "README.md"
+authors = ["Sebastien Martini <seb@dbzteam.org>"]
+
+[lib]
+name = "tars"
