@@ -354,6 +354,9 @@ enum RegionType {
     Cache
 }
 
+impl Copy for RegionType {}
+
+
 // Region hold metadata informations and point to the allocated object
 // eventually returned by the allocator.
 struct Region {
@@ -380,6 +383,9 @@ struct Region {
     // or previous cached chunk when inserted in cache.
     prev: *mut u8,
 }
+
+// A bit countertuitive but it happens Region to make shallow copies.
+impl Copy for Region {}
 
 
 impl Dir {

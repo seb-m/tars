@@ -62,6 +62,9 @@ pub enum RangePos {
     Rand
 }
 
+impl Copy for RangePos {}
+
+
 /// Memory protection flags. `None` means no `Read` and no `Write`
 /// allowed.
 pub enum Prot {
@@ -70,6 +73,8 @@ pub enum Prot {
     Write,
     ReadWrite
 }
+
+impl Copy for Prot {}
 
 impl Prot {
     fn to_mprot(prot: Prot) -> c_int {

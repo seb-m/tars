@@ -1,6 +1,8 @@
 //! TARS
 //!
-//! Data structure containers with protected memory
+//! Data structure containers with protected memory.
+//!
+//! Souce code [repository](https://github.com/seb-m/tars) on Github.
 #![crate_name = "tars"]
 #![experimental]
 #![doc(html_logo_url = "http://www.rust-lang.org/logos/rust-logo-128x128-blk.png",
