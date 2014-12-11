@@ -55,26 +55,23 @@ fn page_round(size: uint) -> uint {
 
 /// Hint at how the buffer should be positionned in the allocated
 /// region.
-#[allow(dead_code)]
+#[deriving(Copy)]
 pub enum RangePos {
     Start,
     End,
     Rand
 }
 
-impl Copy for RangePos {}
-
 
 /// Memory protection flags. `None` means no `Read` and no `Write`
 /// allowed.
+#[deriving(Copy)]
 pub enum Prot {
     None,
     Read,
     Write,
     ReadWrite
 }
-
-impl Copy for Prot {}
 
 impl Prot {
     fn to_mprot(prot: Prot) -> c_int {

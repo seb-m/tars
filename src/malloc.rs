@@ -342,7 +342,7 @@ struct Stats {
     prot_nones: uint
 }
 
-
+#[deriving(Copy)]
 enum RegionType {
     // Region is free, no object attached.
     Free = 0,
@@ -353,8 +353,6 @@ enum RegionType {
     // Region holds an empty chunk that is currently cached.
     Cache
 }
-
-impl Copy for RegionType {}
 
 
 // Region hold metadata informations and point to the allocated object
@@ -384,7 +382,7 @@ struct Region {
     prev: *mut u8,
 }
 
-// A bit countertuitive but it happens Region to make shallow copies.
+// A bit countertuitive but it happens that regions are shallowly copied.
 impl Copy for Region {}
 
 
