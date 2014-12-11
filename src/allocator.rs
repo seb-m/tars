@@ -40,13 +40,13 @@ pub trait KeyAllocator : Allocator {
 ///
 /// Default allocator used to allocate and deallocate memory in protected
 /// buffers.
-pub type BufAlloc = ProtectedBufferAllocator;
+pub type DefaultBufferAllocator = ProtectedBufferAllocator;
 
 /// Default key allocator
 ///
 /// Default allocator used to allocate and deallocate memory in protected
 /// buffers.
-pub type KeyAlloc = ProtectedKeyAllocator;
+pub type DefaultKeyAllocator = ProtectedKeyAllocator;
 
 
 /// Null heap allocator

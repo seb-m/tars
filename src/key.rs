@@ -5,12 +5,13 @@ use std::fmt;
 use std::num::Int;
 use std::rc::Rc;
 
-use allocator::{Allocator, KeyAllocator};
+use allocator::{Allocator, KeyAllocator, DefaultKeyAllocator};
 use buf::ProtBuf;
 
 
 /// Key of bytes
-pub type ProtKey8<A> = ProtKey<A, u8>;
+pub type ProtKey8<A = DefaultKeyAllocator> = ProtKey<u8, A>;
+
 
 const NOREAD: uint = 0;
 
@@ -27,18 +28,21 @@ const NOREAD: uint = 0;
 /// wrapped in `RefCell`.
 ///
 /// ```rust
+/// # #![feature(default_type_params)]
 /// # extern crate tars;
 /// # use tars::allocator::ProtectedKeyAllocator;
-/// # use tars::ProtBuf;
-/// # use tars::ProtKey;
+/// # use tars::{ProtKey, ProtBuf, ProtKey8};
 /// # fn encrypt(_: &[u8], _: &[u8]) {}
 /// # fn main() {
 /// // Instanciate a new buffer initialized with random bytes.
-/// // Same as an usual ProtBuf instance but with a different allocator.
-/// let buf_rnd = ProtBuf::<ProtectedKeyAllocator, u8>::new_rand_os(32);
+/// // Same as an usual ProtBuf instance but with a different allocator
+/// let buf_rnd = ProtBuf::<u8, ProtectedKeyAllocator>::new_rand_os(32);
 ///
-/// // Until here memory buffer is read/write. Turns-it into a key:
+/// // Until here memory buffer is read/write. Turns-it into a key
 /// let key = ProtKey::new(buf_rnd);
+///
+/// // Or more simply, like this with exactly the same result
+/// let key: ProtKey8 = ProtBuf::new_rand_os(32).into_key();
 ///
 /// {
 ///     // Request access in read-mode
@@ -56,15 +60,15 @@ const NOREAD: uint = 0;
 /// }
 /// # }
 /// ```
-pub struct ProtKey<A, T> {
-    key: RefCell<ProtBuf<A, T>>,
+pub struct ProtKey<T, A = DefaultKeyAllocator> {
+    key: RefCell<ProtBuf<T, A>>,
     read_ctr: Rc<Cell<uint>>
 }
 
-impl<A: KeyAllocator, T: Copy> ProtKey<A, T> {
+impl<T: Copy, A: KeyAllocator> ProtKey<T, A> {
     /// Take ownership of `prot_buf` and transform it into a `ProtKey`. By
     /// default prevent any access.
-    pub fn new(prot_buf: ProtBuf<A, T>) -> ProtKey<A, T> {
+    pub fn new(prot_buf: ProtBuf<T, A>) -> ProtKey<T, A> {
         unsafe {
             KeyAllocator::protect_none(None::<A>, prot_buf.as_ptr() as *mut u8,
                                        prot_buf.len_bytes());
@@ -79,7 +83,7 @@ impl<A: KeyAllocator, T: Copy> ProtKey<A, T> {
     /// Consume and copy `prot_buf` to force using `ProtKey`'s allocator.
     /// If `prot_buf` already uses a `KeyAllocator` there is no need to make
     /// a copy so directly call the default cstor `new` instead.
-    pub fn from_buf<B: Allocator>(prot_buf: ProtBuf<B, T>) -> ProtKey<A, T> {
+    pub fn from_buf<B: Allocator>(prot_buf: ProtBuf<T, B>) -> ProtKey<T, A> {
         let buf = ProtBuf::from_slice(prot_buf.as_slice());
         ProtKey::new(buf)
     }
@@ -90,13 +94,13 @@ impl<A: KeyAllocator, T: Copy> ProtKey<A, T> {
     // variant to this `fail`ing method. It would maybe be better to
     // implement a single method returning a `Result`. See this RFC
     // https://github.com/rust-lang/rfcs/blob/master/text/0236-error-conventions.md
-    pub fn read(&self) -> ProtKeyRead<A, T> {
+    pub fn read(&self) -> ProtKeyRead<T, A> {
         ProtKeyRead::new(self.key.borrow(), self.read_ctr.clone())
     }
 
     /// Return a wrapper to the key in read mode. Return `None`
     /// if the key is already accessed in write mode.
-    pub fn try_read(&self) -> Option<ProtKeyRead<A, T>> {
+    pub fn try_read(&self) -> Option<ProtKeyRead<T, A>> {
         match self.key.try_borrow() {
             Some(borrowed_key) => Some(ProtKeyRead::new(borrowed_key,
                                                         self.read_ctr.clone())),
@@ -107,13 +111,13 @@ impl<A: KeyAllocator, T: Copy> ProtKey<A, T> {
     /// Access the key in read mode and pass a reference to closure `f`.
     /// The key can only be read during this call. This method will `panic!`
     /// if a read access cannot be acquired on this key.
-    pub fn read_with(&self, f: |&ProtKeyRead<A, T>|) {
+    pub fn read_with(&self, f: |&ProtKeyRead<T, A>|) {
         f(&self.read())
     }
 
     /// Return a wrapper to the key in write mode. This method `panic!` if
     /// the key is already currently accessed in read or write mode.
-    pub fn write(&self) -> ProtKeyWrite<A, T> {
+    pub fn write(&self) -> ProtKeyWrite<T, A> {
         let key_write = ProtKeyWrite::new(self.key.borrow_mut());
         assert_eq!(self.read_ctr.get(), NOREAD);
         key_write
@@ -121,7 +125,7 @@ impl<A: KeyAllocator, T: Copy> ProtKey<A, T> {
 
     /// Return a wrapper to the key in write mode. Return `None`
     /// if the key is already accessed in read or write mode.
-    pub fn try_write(&self) -> Option<ProtKeyWrite<A, T>> {
+    pub fn try_write(&self) -> Option<ProtKeyWrite<T, A>> {
         let key_write = match self.key.try_borrow_mut() {
             Some(borrowed_key) => Some(ProtKeyWrite::new(borrowed_key)),
             None => None
@@ -137,27 +141,27 @@ impl<A: KeyAllocator, T: Copy> ProtKey<A, T> {
     /// Access the key in write mode and pass a reference to closure `f`.
     /// The key can only be writtent during this call. This method will
     /// `panic!` if a write access cannot be acquired on this key.
-    pub fn write_with(&self, f: |&mut ProtKeyWrite<A, T>|) {
+    pub fn write_with(&self, f: |&mut ProtKeyWrite<T, A>|) {
         f(&mut self.write())
     }
 }
 
 #[unsafe_destructor]
-impl<A: KeyAllocator, T: Copy> Drop for ProtKey<A, T> {
+impl<T: Copy, A: KeyAllocator> Drop for ProtKey<T, A> {
     fn drop(&mut self) {
         // FIXME: without this assert this drop is useless.
         assert_eq!(self.read_ctr.get(), NOREAD);
     }
 }
 
-impl<A: KeyAllocator, T: Copy> Clone for ProtKey<A, T> {
-    fn clone(&self) -> ProtKey<A, T> {
+impl<T: Copy, A: KeyAllocator> Clone for ProtKey<T, A> {
+    fn clone(&self) -> ProtKey<T, A> {
         ProtKey::new(self.read().clone())
     }
 }
 
-impl<A: KeyAllocator, T: Copy> PartialEq for ProtKey<A, T> {
-    fn eq(&self, other: &ProtKey<A, T>) -> bool {
+impl<T: Copy, A: KeyAllocator> PartialEq for ProtKey<T, A> {
+    fn eq(&self, other: &ProtKey<T, A>) -> bool {
         match (self.try_read(), other.try_read()) {
             (Some(ref s), Some(ref o)) => *s == *o,
             (_, _) => false
@@ -165,7 +169,7 @@ impl<A: KeyAllocator, T: Copy> PartialEq for ProtKey<A, T> {
     }
 }
 
-impl<A: KeyAllocator, T: fmt::Show + Copy> fmt::Show for ProtKey<A, T> {
+impl<T: fmt::Show + Copy, A: KeyAllocator> fmt::Show for ProtKey<T, A> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self.try_read() {
             Some(r) => r.fmt(f),
@@ -180,14 +184,14 @@ impl<A: KeyAllocator, T: fmt::Show + Copy> fmt::Show for ProtKey<A, T> {
 /// This instance is the result of a `read` request on a `ProtKey`. If no
 /// other similar instance on the same `ProtKey` exists, raw memory access
 /// will be revoked when this instance is destructed.
-pub struct ProtKeyRead<'a, A, T: 'a> {
-    ref_key: Ref<'a, ProtBuf<A, T>>,
+pub struct ProtKeyRead<'a, T: 'a, A> {
+    ref_key: Ref<'a, ProtBuf<T, A>>,
     read_ctr: Rc<Cell<uint>>
 }
 
-impl<'a, A: KeyAllocator, T: Copy> ProtKeyRead<'a, A, T> {
-    fn new(ref_key: Ref<'a, ProtBuf<A, T>>,
-           read_ctr: Rc<Cell<uint>>) -> ProtKeyRead<'a, A, T> {
+impl<'a, T: Copy, A: KeyAllocator> ProtKeyRead<'a, T, A> {
+    fn new(ref_key: Ref<'a, ProtBuf<T, A>>,
+           read_ctr: Rc<Cell<uint>>) -> ProtKeyRead<'a, T, A> {
         if read_ctr.get() == NOREAD {
             unsafe {
                 KeyAllocator::protect_read(None::<A>,
@@ -205,13 +209,13 @@ impl<'a, A: KeyAllocator, T: Copy> ProtKeyRead<'a, A, T> {
     /// Clone this instance.
     // FIXME: Currently does not implement `clone()` as it would interfere
     //        with `ProtKey::clone()`. (see comment in `cell::clone_ref()`).
-    pub fn clone_it(&self) -> ProtKeyRead<A, T> {
+    pub fn clone_it(&self) -> ProtKeyRead<T, A> {
         ProtKeyRead::new(cell::clone_ref(&self.ref_key), self.read_ctr.clone())
     }
 }
 
 #[unsafe_destructor]
-impl<'a, A: KeyAllocator, T: Copy> Drop for ProtKeyRead<'a, A, T> {
+impl<'a, T: Copy, A: KeyAllocator> Drop for ProtKeyRead<'a, T, A> {
     fn drop(&mut self) {
         self.read_ctr.set(self.read_ctr.get().checked_sub(1).unwrap());
         if self.read_ctr.get() == NOREAD {
@@ -224,25 +228,25 @@ impl<'a, A: KeyAllocator, T: Copy> Drop for ProtKeyRead<'a, A, T> {
     }
 }
 
-impl<'a, A: KeyAllocator, T: Copy> Deref<ProtBuf<A, T>> for ProtKeyRead<'a, A, T> {
-    fn deref(&self) -> &ProtBuf<A, T> {
+impl<'a, T: Copy, A: KeyAllocator> Deref<ProtBuf<T, A>> for ProtKeyRead<'a, T, A> {
+    fn deref(&self) -> &ProtBuf<T, A> {
         &*self.ref_key
     }
 }
 
-impl<'a, A: KeyAllocator, T: Copy> AsSlice<T> for ProtKeyRead<'a, A, T> {
+impl<'a, T: Copy, A: KeyAllocator> AsSlice<T> for ProtKeyRead<'a, T, A> {
     fn as_slice(&self) -> &[T] {
         (**self).as_slice()
     }
 }
 
-impl<'a, A: KeyAllocator, T: Copy> PartialEq for ProtKeyRead<'a, A, T> {
-    fn eq(&self, other: &ProtKeyRead<A, T>) -> bool {
+impl<'a, T: Copy, A: KeyAllocator> PartialEq for ProtKeyRead<'a, T, A> {
+    fn eq(&self, other: &ProtKeyRead<T, A>) -> bool {
         **self == **other
     }
 }
 
-impl<'a, A: KeyAllocator, T: fmt::Show + Copy> fmt::Show for ProtKeyRead<'a, A, T> {
+impl<'a, T: fmt::Show + Copy, A: KeyAllocator> fmt::Show for ProtKeyRead<'a, T, A> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         self.ref_key.fmt(f)
     }
@@ -253,12 +257,12 @@ impl<'a, A: KeyAllocator, T: fmt::Show + Copy> fmt::Show for ProtKeyRead<'a, A, 
 ///
 /// This instance is the result of a `write` request on a `ProtKey`. Its
 /// raw memory may only be written during the lifetime of this object.
-pub struct ProtKeyWrite<'a, A, T: 'a> {
-    ref_key: RefMut<'a, ProtBuf<A, T>>,
+pub struct ProtKeyWrite<'a, T: 'a, A> {
+    ref_key: RefMut<'a, ProtBuf<T, A>>,
 }
 
-impl<'a, A: KeyAllocator, T: Copy> ProtKeyWrite<'a, A, T> {
-    fn new(ref_key: RefMut<'a, ProtBuf<A, T>>) -> ProtKeyWrite<'a, A, T> {
+impl<'a, T: Copy, A: KeyAllocator> ProtKeyWrite<'a, T, A> {
+    fn new(ref_key: RefMut<'a, ProtBuf<T, A>>) -> ProtKeyWrite<'a, T, A> {
         unsafe {
             KeyAllocator::protect_write(None::<A>,
                                         ref_key.as_ptr() as *mut u8,
@@ -271,7 +275,7 @@ impl<'a, A: KeyAllocator, T: Copy> ProtKeyWrite<'a, A, T> {
 }
 
 #[unsafe_destructor]
-impl<'a, A: KeyAllocator, T: Copy> Drop for ProtKeyWrite<'a, A, T> {
+impl<'a, T: Copy, A: KeyAllocator> Drop for ProtKeyWrite<'a, T, A> {
     fn drop(&mut self) {
         unsafe {
             KeyAllocator::protect_none(None::<A>,
@@ -284,16 +288,16 @@ impl<'a, A: KeyAllocator, T: Copy> Drop for ProtKeyWrite<'a, A, T> {
 /// This method is mandatory,  but it should not be used for reading the
 /// content of the underlying key...
 #[allow(unreachable_code)]
-impl<'a, A: KeyAllocator, T: Copy> Deref<ProtBuf<A, T>> for ProtKeyWrite<'a, A, T> {
-    fn deref(&self) -> &ProtBuf<A, T> {
+impl<'a, T: Copy, A: KeyAllocator> Deref<ProtBuf<T, A>> for ProtKeyWrite<'a, T, A> {
+    fn deref(&self) -> &ProtBuf<T, A> {
         panic!("key must only be written");
         &*self.ref_key
     }
 }
 
-impl<'a, A: KeyAllocator,
-      T: Copy> DerefMut<ProtBuf<A, T>> for ProtKeyWrite<'a, A, T> {
-    fn deref_mut(&mut self) -> &mut ProtBuf<A, T> {
+impl<'a, T: Copy,
+      A: KeyAllocator> DerefMut<ProtBuf<T, A>> for ProtKeyWrite<'a, T, A> {
+    fn deref_mut(&mut self) -> &mut ProtBuf<T, A> {
         &mut *self.ref_key
     }
 }
@@ -303,12 +307,12 @@ impl<'a, A: KeyAllocator,
 mod test {
     use allocator::ProtectedKeyAllocator;
     use buf::ProtBuf;
-    use key::ProtKey;
+    use key::{ProtKey, ProtKey8};
 
 
     #[test]
     fn test_read() {
-        let s1 = ProtBuf::<ProtectedKeyAllocator, u8>::new_rand_os(256);
+        let s1 = ProtBuf::<u8, ProtectedKeyAllocator>::new_rand_os(256);
         let s2 = s1.clone();
 
         let key = ProtKey::new(s1);
@@ -335,9 +339,9 @@ mod test {
 
     #[test]
     fn test_write() {
-        let zero = ProtBuf::<ProtectedKeyAllocator, u8>::new_zero(256);
+        let zero = ProtBuf::<u8, ProtectedKeyAllocator>::new_zero(256);
         let key =
-            ProtBuf::<ProtectedKeyAllocator, u8>::new_rand_os(256).into_key();
+            ProtBuf::<u8, ProtectedKeyAllocator>::new_rand_os(256).into_key();
 
         for i in key.write().as_mut_slice().iter_mut() {
             *i = 0;
@@ -354,5 +358,13 @@ mod test {
 
         assert!(key.try_write().is_some());
         assert!(key.try_read().is_some());
+    }
+
+    #[test]
+    fn test_default_params() {
+        let b = ProtBuf::new_zero(42);
+        let _: ProtKey8 = ProtKey::new(b);
+        let b = ProtBuf::new_zero(42);
+        let _: ProtKey<u8> = ProtKey::new(b);
     }
 }

@@ -10,6 +10,7 @@
        html_root_url = "http://doc.rust-lang.org/")]
 
 #![feature(macro_rules)]
+#![feature(default_type_params)]
 #![feature(unsafe_destructor)]
 #![feature(slicing_syntax)]
 #![feature(phase)]
@@ -21,8 +22,8 @@ extern crate alloc;
 extern crate libc;
 extern crate serialize;
 
-pub use allocator::BufAlloc;
-pub use allocator::KeyAlloc;
+pub use allocator::DefaultBufferAllocator;
+pub use allocator::DefaultKeyAllocator;
 pub use buf::{ProtBuf, ProtBuf8};
 pub use key::{ProtKey, ProtKey8, ProtKeyRead, ProtKeyWrite};
 
