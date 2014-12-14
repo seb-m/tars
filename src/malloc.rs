@@ -1898,7 +1898,7 @@ mod test {
     fn test_dir_addr() {
         let size = 10;
 
-        let mut futures = Vec::from_fn(size, |_| Future::spawn(proc() {
+        let mut futures = Vec::from_fn(size, |_| Future::spawn(move || {
             super::task_dir().dir.borrow().dir.to_uint()
         }));
 
