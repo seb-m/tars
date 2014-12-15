@@ -1,8 +1,9 @@
-# Modify mlock limits
-CC=gcc
-mlock: env/mlock.c
-	$(CC) -o env/mlock -Wall env/mlock.c
-	./env/mlock
+
+# Test command for Travis
+test:
+	rustc src/lib.rs -O --test --cfg no_mlock
+	./tars
+	rm -f tars
 
 clean:
 	rm -rf doc/
@@ -10,7 +11,6 @@ clean:
 	find . \( -name '*.a' -or \
 		-name '*.o' -or \
 		-name '*.so' -or \
-		-name 'mlock' -or \
 		-name 'Cargo.lock' -or \
 		-name '*~' \) \
 		-print -exec rm {} \;
