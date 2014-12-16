@@ -111,8 +111,8 @@ impl<T: Copy, A: KeyAllocator> ProtKey<T, A> {
     /// Access the key in read mode and pass a reference to closure `f`.
     /// The key can only be read during this call. This method will `panic!`
     /// if a read access cannot be acquired on this key.
-    pub fn read_with(&self, f: |&ProtKeyRead<T, A>|) {
-        f(&self.read())
+    pub fn read_with(&self, f: |ProtKeyRead<T, A>|) {
+        f(self.read())
     }
 
     /// Return a wrapper to the key in write mode. This method `panic!` if
