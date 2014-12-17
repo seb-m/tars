@@ -26,7 +26,7 @@
 //! unexpected internal errors, integrity errors, are treated as
 //! irrecoverable. Therefore unless otherwise specified these functions
 //! will `panic!` on error and the heap will be cleaned-up on task
-//! unwinding as each allocator is instanciated and dedicated to a single
+//! unwinding as each allocator is instantiated and dedicated to a single
 //! runtime task.
 //!
 //! Allocations of size zero are handled by returning a pointer to a

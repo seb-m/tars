@@ -58,12 +58,12 @@ pub fn bytes_eq<T>(x: &[T], y: &[T]) -> bool {
 }
 
 
-// Instanciate a PRNG faster than `os_rng()`.
+// Instantiate a PRNG faster than `os_rng()`.
 pub fn rng() -> TaskRng {
     rand::task_rng()
 }
 
-// Instanciate a PRNG based on `urandom`.
+// Instantiate a PRNG based on `urandom`.
 pub fn os_rng() -> OsRng {
     OsRng::new().unwrap()
 }

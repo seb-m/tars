@@ -34,7 +34,7 @@ const NOREAD: uint = 0;
 /// # use tars::{ProtKey, ProtBuf, ProtKey8};
 /// # fn encrypt(_: &[u8], _: &[u8]) {}
 /// # fn main() {
-/// // Instanciate a new buffer initialized with random bytes.
+/// // Instantiate a new buffer initialized with random bytes.
 /// // Same as an usual ProtBuf instance but with a different allocator
 /// let buf_rnd = ProtBuf::<u8, ProtectedKeyAllocator>::new_rand_os(32);
 ///
