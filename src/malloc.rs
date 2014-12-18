@@ -156,7 +156,7 @@ macro_rules! stats_inc(
             $attr += 1;
         }
     )
-)
+);
 
 macro_rules! stats_inc_by(
     ($attr:expr, $val:expr) => (
@@ -164,7 +164,7 @@ macro_rules! stats_inc_by(
             $attr += $val;
         }
     )
-)
+);
 
 
 unsafe fn dir_alloc() -> *mut u8 {
@@ -278,7 +278,7 @@ pub fn task_dir() -> TaskDir {
             dir: unsafe { Dir::init() }
         };
         Rc::new(RefCell::new(dir))
-    })
+    });
 
     TaskDir {
         dir: TASK_DIR_KEY.with(|dir| dir.clone())
