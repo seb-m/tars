@@ -22,6 +22,8 @@ Two data containers are currently built on top of this allocator. They follow tw
 
 The generated documentation is also available [here](http://seb.dbzteam.org/rs/tars/tars/).
 
+The [talk](https://github.com/seb-m/tars/raw/master/rust-meetup-122014/rust-meetup-122014-tars.pdf) I've given on TARS at [Bay Area Rust meetup](https://air.mozilla.org/bay-area-rust-meetup-december-2014/) held by Mozilla SF on 2014/12/18.
+
 
 ## License
 
