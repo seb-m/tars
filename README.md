@@ -15,14 +15,13 @@ Two data containers are currently built on top of this allocator. They follow tw
 * Experimental code, lot of `unsafe`. Code and interfaces may change.
 * Only tested on OS X and Linux (x86, x86_64). Not compatible with Windows.
 * Slow allocations compared to general purpose allocators.
-* Currently code `panic!` on errors so it may not integrate well from C code.
 
 
 ## Documentation
 
 The generated documentation is also available [here](http://seb.dbzteam.org/rs/tars/tars/).
 
-The [talk](https://github.com/seb-m/tars/raw/master/rust-meetup-122014/rust-meetup-122014-tars.pdf) I've given on TARS at [Bay Area Rust Meetup](https://air.mozilla.org/bay-area-rust-meetup-december-2014/) held by Mozilla SF on 2014/12/18.
+[Talk](https://github.com/seb-m/tars/raw/master/rust-meetup-122014/rust-meetup-122014-tars.pdf) given on TARS at [Bay Area Rust Meetup](https://air.mozilla.org/bay-area-rust-meetup-december-2014/) held by Mozilla SF on 2014/12/18.
 
 
 ## License
