@@ -25,9 +25,9 @@
 //! Most errors such as bad pointers provided by callers, as well as
 //! unexpected internal errors, integrity errors, are treated as
 //! irrecoverable. Therefore unless otherwise specified these functions
-//! will `panic!` on error and the heap will be cleaned-up on task
+//! will `panic!` on error and the heap will be cleaned-up on stack
 //! unwinding as each allocator is instantiated and dedicated to a single
-//! runtime task.
+//! thread.
 //!
 //! Allocations of size zero are handled by returning a pointer to a
 //! static page that can't be read nor written, emitting a termination
@@ -196,11 +196,11 @@ unsafe fn regions_dealloc(ptr: *mut u8, count: uint) {
 
 // Provide an interface to the pages directory.
 #[doc(hidden)]
-pub struct TaskDir {
+pub struct ThreadDir {
     dir: Rc<RefCell<LocalDir>>
 }
 
-impl TaskDir {
+impl ThreadDir {
     pub unsafe fn alloc(&mut self, size: uint, zero_fill: bool,
                         force_large: bool) -> *mut u8 {
         self.dir.borrow_mut().alloc(size, zero_fill, force_large)
@@ -220,14 +220,14 @@ impl TaskDir {
     }
 }
 
-impl fmt::Show for TaskDir {
+impl fmt::Show for ThreadDir {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         self.dir.borrow().fmt(f)
     }
 }
 
 
-// Structure used to manage a Dir and owned by a task.
+// Structure used to manage a Dir and owned by a thread.
 struct LocalDir {
     dir: *mut Dir
 }
@@ -272,16 +272,16 @@ impl DerefMut<Dir> for LocalDir {
 
 
 #[doc(hidden)]
-pub fn task_dir() -> TaskDir {
-    thread_local!(static TASK_DIR_KEY: Rc<RefCell<LocalDir>> = {
+pub fn thread_dir() -> ThreadDir {
+    thread_local!(static THREAD_DIR_KEY: Rc<RefCell<LocalDir>> = {
         let dir = LocalDir {
             dir: unsafe { Dir::init() }
         };
         Rc::new(RefCell::new(dir))
     });
 
-    TaskDir {
-        dir: TASK_DIR_KEY.with(|dir| dir.clone())
+    ThreadDir {
+        dir: THREAD_DIR_KEY.with(|dir| dir.clone())
     }
 }
 
@@ -1308,7 +1308,7 @@ unsafe fn xmalloc(size: uint, align: uint, zero_fill: bool,
         None => return ptr::null_mut()
     };
 
-    task_dir().alloc(sz, zero_fill, force_large)
+    thread_dir().alloc(sz, zero_fill, force_large)
 }
 
 /// Allocate memory
@@ -1350,7 +1350,7 @@ unsafe fn xrealloc(ptr: *mut u8, size: uint, align: uint,
         None => return ptr::null_mut()
     };
 
-    task_dir().realloc(ptr, sz, false, force_large)
+    thread_dir().realloc(ptr, sz, false, force_large)
 }
 
 /// Reallocate memory
@@ -1375,7 +1375,7 @@ pub unsafe fn realloc_key(ptr: *mut u8, size: uint, align: uint) -> *mut u8 {
 /// has no effect if `ptr` is a `NULL` pointer or a pointer to a zero-sized
 /// area. But will `panic!` for any other kind of error.
 pub unsafe fn free(ptr: *mut u8) {
-    task_dir().dealloc(ptr);
+    thread_dir().dealloc(ptr);
 }
 
 
@@ -1385,7 +1385,7 @@ pub unsafe fn free(ptr: *mut u8) {
 /// This function has no effect if `ptr` is `NULL` but `panic!` for
 /// any other kind of error.
 pub unsafe fn protect_read(ptr: *mut u8) {
-    task_dir().protect(ptr, Prot::Read);
+    thread_dir().protect(ptr, Prot::Read);
 }
 
 /// Set memory protection to write-only
@@ -1396,14 +1396,14 @@ pub unsafe fn protect_read(ptr: *mut u8) {
 /// as x86, x86_64), setting a `write` page protection will also implicitly
 /// imply granting `read` access too (see `man mprotect`).
 pub unsafe fn protect_write(ptr: *mut u8) {
-    task_dir().protect(ptr, Prot::Write);
+    thread_dir().protect(ptr, Prot::Write);
 }
 
 /// Set memory protection to prevent any access
 ///
 /// See `protect_read` for its usage.
 pub unsafe fn protect_none(ptr: *mut u8) {
-    task_dir().protect(ptr, Prot::None);
+    thread_dir().protect(ptr, Prot::None);
 }
 
 
@@ -1425,7 +1425,7 @@ mod test {
 
 
     fn print_dir_state() {
-        info!("{}", super::task_dir())
+        info!("{}", super::thread_dir())
     }
 
     fn write_byte(ptr: *mut u8, index: uint) {
@@ -1494,9 +1494,9 @@ mod test {
             }
         }
 
-        assert!((super::task_dir().dir.borrow().total -
-                 super::task_dir().dir.borrow().cache_len) <=
-                super::task_dir().dir.borrow().free + 1);
+        assert!((super::thread_dir().dir.borrow().total -
+                 super::thread_dir().dir.borrow().cache_len) <=
+                super::thread_dir().dir.borrow().free + 1);
     }
 
     #[test]
@@ -1529,8 +1529,8 @@ mod test {
             }
         }
 
-        assert!(super::task_dir().dir.borrow().total ==
-                super::task_dir().dir.borrow().free);
+        assert!(super::thread_dir().dir.borrow().total ==
+                super::thread_dir().dir.borrow().free);
     }
 
     #[test]
@@ -1562,8 +1562,8 @@ mod test {
             }
         }
 
-        assert!(super::task_dir().dir.borrow().total ==
-                super::task_dir().dir.borrow().free);
+        assert!(super::thread_dir().dir.borrow().total ==
+                super::thread_dir().dir.borrow().free);
     }
 
     #[test]
@@ -1626,9 +1626,9 @@ mod test {
 
         print_dir_state();
 
-        assert!((super::task_dir().dir.borrow().total -
-                 super::task_dir().dir.borrow().cache_len) <=
-                super::task_dir().dir.borrow().free + 1);
+        assert!((super::thread_dir().dir.borrow().total -
+                 super::thread_dir().dir.borrow().cache_len) <=
+                super::thread_dir().dir.borrow().free + 1);
     }
 
     #[test]
@@ -1899,7 +1899,7 @@ mod test {
         let size = 10;
 
         let mut futures = Vec::from_fn(size, |_| Future::spawn(move || {
-            super::task_dir().dir.borrow().dir.to_uint()
+            super::thread_dir().dir.borrow().dir.to_uint()
         }));
 
         let addrs: HashSet<uint> =
@@ -1958,7 +1958,7 @@ mod test {
     #[bench]
     fn bench_init(b: &mut Bencher) {
         b.iter(|| {
-            super::task_dir();
+            super::thread_dir();
         })
     }
 
