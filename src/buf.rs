@@ -1,8 +1,8 @@
 //! Protected buffer
 //!
 use alloc::heap;
-use serialize::{Encodable, Encoder, Decodable, Decoder};
-use serialize::hex::ToHex;
+use rustc_serialize::{Encodable, Encoder, Decodable, Decoder};
+use rustc_serialize::hex::ToHex;
 use std::fmt;
 use std::intrinsics;
 use std::iter::AdditiveIterator;
@@ -13,7 +13,7 @@ use std::ops;
 use std::ptr;
 use std::rand::Rng;
 use std::raw::Slice;
-use std::slice::{Items, MutItems};
+use std::slice::{Iter, IterMut};
 
 use allocator::{Allocator, KeyAllocator, DefaultBufferAllocator};
 use key::ProtKey;
@@ -270,13 +270,13 @@ impl<T: Copy, A: Allocator> ProtBuf<T, A> {
 
     /// Return an iterator over references to the elements of the buffer
     /// in order.
-    pub fn iter(&self) -> Items<T> {
+    pub fn iter(&self) -> Iter<T> {
         self[].iter()
     }
 
     /// Return an iterator over mutable references to the elements of the
     /// buffer in order.
-    pub fn iter_mut(&mut self) -> MutItems<T> {
+    pub fn iter_mut(&mut self) -> IterMut<T> {
         self[mut].iter_mut()
     }
 

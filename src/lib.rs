@@ -20,7 +20,8 @@
 
 extern crate alloc;
 extern crate libc;
-extern crate serialize;
+// FIXME: maybe we should remove this dependancy.
+extern crate "rustc-serialize" as rustc_serialize;
 
 pub use allocator::DefaultBufferAllocator;
 pub use allocator::DefaultKeyAllocator;
