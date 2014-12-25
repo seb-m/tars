@@ -9,5 +9,9 @@ authors = ["Sebastien Martini <seb@dbzteam.org>"]
 [lib]
 name = "tars"
 
-[dependencies]
-rustc-serialize = "0.1.4"
+[dependencies.rustc-serialize]
+git = "https://github.com/rust-lang/rustc-serialize"
+
+# FIXME: temp
+#[dependencies]
+#rustc-serialize = "0.1.4"
