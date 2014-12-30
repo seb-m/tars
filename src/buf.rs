@@ -29,7 +29,7 @@ unsafe fn alloc<A: Allocator, T>(count: uint) -> *mut T {
     // allocate
     let ptr = Allocator::allocate(None::<A>, size,
                                   mem::min_align_of::<T>()) as *mut T;
-    assert!(ptr.is_not_null());
+    assert!(!ptr.is_null());
     ptr
 }
 
@@ -167,7 +167,7 @@ impl<T: Copy, A: Allocator> ProtBuf<T, A> {
 
     /// New buffer from unsafe buffer.
     pub unsafe fn from_raw_buf(buf: *const T, length: uint) -> ProtBuf<T, A> {
-        assert!(buf.is_not_null());
+        assert!(!buf.is_null());
         let n = ProtBuf::with_length(length);
         ptr::copy_nonoverlapping_memory(n.ptr, buf, n.len);
         n
@@ -271,7 +271,7 @@ impl<T: FromPrimitive + Copy, A: Allocator> ProtBuf<T, A> {
 #[unsafe_destructor]
 impl<T: Copy, A: Allocator> Drop for ProtBuf<T, A> {
     fn drop(&mut self) {
-        if self.len != 0 && self.ptr.is_not_null() && mem::size_of::<T>() != 0 {
+        if self.len != 0 && !self.ptr.is_null() && mem::size_of::<T>() != 0 {
             unsafe {
                 // There is no explicit drop on each T elements, as T
                 // is contrained to Copy it should not be an issue as they

@@ -555,7 +555,7 @@ impl Dir {
     }
 
     fn region_find(&self, object: *mut u8) -> Option<uint> {
-        assert!(object.is_not_null());
+        assert!(!object.is_null());
 
         let start = mmap::mask_pointer(object);
         let mut index = self.object_to_region_index(object);
@@ -615,7 +615,7 @@ impl Dir {
             region.next = ptr::null_mut();
             *end = region.object;
         } else {
-            assert!(end.is_not_null());
+            assert!(!end.is_null());
             region.next = *start;
             let first_region = self.regions.offset(self.region_find(
                 *start).unwrap().to_int().unwrap());
@@ -628,14 +628,14 @@ impl Dir {
 
     unsafe fn list_remove(&mut self, start: &mut *mut u8, end: &mut *mut u8,
                           region: &mut Region) {
-        let prev_region = if region.prev.is_not_null() {
+        let prev_region = if !region.prev.is_null() {
             self.regions.offset(self.region_find(region.prev).unwrap()
                                 .to_int().unwrap())
         } else {
             ptr::null_mut()
         };
 
-        let next_region = if region.next.is_not_null() {
+        let next_region = if !region.next.is_null() {
             self.regions.offset(self.region_find(region.next).unwrap()
                                 .to_int().unwrap())
         } else {
@@ -719,7 +719,7 @@ impl Dir {
         } else {
             (*dir).cache2
         };
-        assert!(chunk.is_not_null());
+        assert!(!chunk.is_null());
 
         let region_index = (*dir).region_find(chunk).unwrap();
         let region = (*dir).regions.offset(region_index.to_int().unwrap());
@@ -736,7 +736,7 @@ impl Dir {
 
     #[inline]
     fn has_free_chunk(&self, chunk_size: uint) -> bool {
-        self.chunks1[chunk_index(chunk_size)].is_not_null()
+        !self.chunks1[chunk_index(chunk_size)].is_null()
     }
 
     unsafe fn create_chunk(&mut self, chunk_size: uint) {
@@ -774,7 +774,7 @@ impl Dir {
         } else {
             self.chunks2[index]
         };
-        assert!(chunk.is_not_null());
+        assert!(!chunk.is_null());
 
         if index == 0 {
             return chunk;
@@ -843,7 +843,7 @@ impl Dir {
         assert!(self.check_integrity());
 
         let nptr = self.alloc(size, zero_fill, force_large);
-        assert!(nptr.is_not_null());
+        assert!(!nptr.is_null());
 
         if ptr.is_null() {
             return nptr;
@@ -966,7 +966,7 @@ impl fmt::Show for Dir {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         try!(write!(fmt, "Current state:\n"));
 
-        assert!(self.regions.is_not_null());
+        assert!(!self.regions.is_null());
         let mut num_free = 0u;
         let mut num_chunk = 0u;
         let mut num_large = 0u;
@@ -1005,7 +1005,7 @@ impl fmt::Show for Dir {
                     l += 1;
                     let region = self.region_at_index(
                         self.region_find(object).unwrap());
-                    if region.next.is_not_null() {
+                    if !region.next.is_null() {
                         object = region.next;
                     } else {
                         break;
@@ -1073,7 +1073,7 @@ impl fmt::Show for Stats {
 impl Region {
     fn init(&mut self, object: *mut u8, size: uint, chunk: bool,
             canary_dir: uint) {
-        assert!(object.is_not_null());
+        assert!(!object.is_null());
         self.object = object;
         self.canary = canary_dir ^ object as uint;
         self.kind = if chunk {
@@ -1122,7 +1122,7 @@ impl Region {
         self.kind = RegionType::Cache;
         self.size = 0;
 
-        assert!(self.object.is_not_null());
+        assert!(!self.object.is_null());
         mmap::protect(self.object, mmap::page_size(), Prot::None);
     }
 
@@ -1133,7 +1133,7 @@ impl Region {
         self.size = chunk_size;
         self.init_chunk();
 
-        assert!(self.object.is_not_null());
+        assert!(!self.object.is_null());
         mmap::protect(self.object, mmap::page_size(), Prot::ReadWrite);
     }
 
@@ -1454,7 +1454,7 @@ mod test {
                 s[i] = size;
                 super::malloc(size, 0)
             };
-            assert!(p[i].is_not_null());
+            assert!(!p[i].is_null());
 
             for j in range(0u, s[i]) {
                 write_byte(p[i], j);
@@ -1477,7 +1477,7 @@ mod test {
                 s[i] = size;
                 super::malloc(size, 0)
             };
-            assert!(p[i].is_not_null());
+            assert!(!p[i].is_null());
 
             for j in range(0u, s[i]) {
                 write_byte(p[i], j);
@@ -1512,7 +1512,7 @@ mod test {
                 s[i] = size;
                 super::malloc(size, 0)
             };
-            assert!(p[i].is_not_null());
+            assert!(!p[i].is_null());
 
             for j in range(0u, s[i]) {
                 write_byte(p[i], j);
@@ -1545,7 +1545,7 @@ mod test {
                 s[i] = size;
                 super::malloc_key(size, 0)
             };
-            assert!(p[i].is_not_null());
+            assert!(!p[i].is_null());
 
             for j in range(0u, s[i]) {
                 write_byte(p[i], j);
@@ -1578,7 +1578,7 @@ mod test {
                 s[i] = size;
                 super::malloc(size, 0)
             };
-            assert!(p[i].is_not_null());
+            assert!(!p[i].is_null());
 
             for j in range(0u, s[i]) {
                 write_byte(p[i], j);
@@ -1605,7 +1605,7 @@ mod test {
                 s[i] = size;
                 super::malloc(size, 0)
             };
-            assert!(p[i].is_not_null());
+            assert!(!p[i].is_null());
 
             for j in range(0u, s[i]) {
                 write_byte(p[i], j);
@@ -1647,7 +1647,7 @@ mod test {
             kptr = unsafe {
                 super::malloc_key(size, align)
             };
-            assert!(sptr.is_not_null() && kptr.is_not_null());
+            assert!(!sptr.is_null() && !kptr.is_null());
             assert!(sptr as uint % align == 0 && kptr as uint % align == 0);
 
             for i in range(0u, size) {
@@ -1680,7 +1680,7 @@ mod test {
         unsafe {
             let p1 = super::malloc(42, 0);
             let p2 = super::malloc(42, 0);
-            assert!(p1.is_not_null() && p2.is_not_null());
+            assert!(!p1.is_null() && !p2.is_null());
 
             super::free(p1);
             super::free(p1);
@@ -1692,7 +1692,7 @@ mod test {
     fn test_double_free_chunk2() {
         unsafe {
             let p = super::malloc(42, 0);
-            assert!(p.is_not_null());
+            assert!(!p.is_null());
             super::free(p);
             super::free(p);
         }
@@ -1736,7 +1736,7 @@ mod test {
     fn test_protect_chunk() {
         unsafe {
             let p = super::malloc(42, 0);
-            assert!(p.is_not_null());
+            assert!(!p.is_null());
             super::protect_read(p);
         }
     }
@@ -1758,7 +1758,7 @@ mod test {
 
         unsafe {
             let p = super::malloc_key(42, 0);
-            assert!(p.is_not_null());
+            assert!(!p.is_null());
 
             super::protect_write(p);
             write_byte(p, 42);
@@ -1790,7 +1790,7 @@ mod test {
 
         unsafe {
             let p = super::malloc(0, 0);
-            assert!(p.is_not_null());
+            assert!(!p.is_null());
             super::free(p);
         }
     }
@@ -1803,8 +1803,8 @@ mod test {
         unsafe {
             let mut p1 = super::malloc(size1, 0);
             let mut p2 = super::malloc_key(size1, 0);
-            assert!(p1.is_not_null());
-            assert!(p2.is_not_null());
+            assert!(!p1.is_null());
+            assert!(!p2.is_null());
 
             for i in range(0u, size1) {
                 write_byte(p1, i);
@@ -1813,8 +1813,8 @@ mod test {
 
             p1 = super::realloc(p1, size2, 0);
             p2 = super::realloc_key(p2, size2, 0);
-            assert!(p1.is_not_null());
-            assert!(p2.is_not_null());
+            assert!(!p1.is_null());
+            assert!(!p2.is_null());
 
             for i in range(0u, cmp::min(size1, size2)) {
                 read_byte(p1 as *const u8, i);
@@ -1844,17 +1844,17 @@ mod test {
 
         unsafe {
             let mut p1 = super::malloc(size, 0);
-            assert!(p1.is_not_null());
+            assert!(!p1.is_null());
 
             for i in range(0u, size) {
                 write_byte(p1, i);
             }
 
             p1 = super::realloc(p1, 0, 0);
-            assert!(p1.is_not_null());
+            assert!(!p1.is_null());
 
             let p2 = super::realloc(p1, 0, 0);
-            assert!(p2.is_not_null());
+            assert!(!p2.is_null());
 
             assert!(p1 == p2);
 
@@ -1868,7 +1868,7 @@ mod test {
         unsafe {
             // Large
             let mut p = super::calloc(1, os::page_size(), 0);
-            assert!(p.is_not_null());
+            assert!(!p.is_null());
 
             for i in range(0u, os::page_size()) {
                 assert!(*p.offset(i as int) == 0);
@@ -1877,7 +1877,7 @@ mod test {
 
             // Chunk
             p = super::calloc(1, 42, 0);
-            assert!(p.is_not_null());
+            assert!(!p.is_null());
 
             for i in range(0u, 42) {
                 assert!(*p.offset(i as int) == 0);
@@ -1922,10 +1922,10 @@ mod test {
 
         unsafe {
             let s = super::malloc(256, 0);
-            assert!(s.is_not_null());
+            assert!(!s.is_null());
 
             let d = heap::allocate(2 * os::page_size(), 0);
-            assert!(d.is_not_null());
+            assert!(!d.is_null());
 
             ptr::copy_nonoverlapping_memory(d, s as *const u8,
                                             2 * os::page_size());
@@ -1945,10 +1945,10 @@ mod test {
 
         unsafe {
             let s = super::malloc(4096, 0);
-            assert!(s.is_not_null());
+            assert!(!s.is_null());
 
             let d = heap::allocate(2 * os::page_size(), 0);
-            assert!(d.is_not_null());
+            assert!(!d.is_null());
 
             ptr::copy_nonoverlapping_memory(d, s as *const u8,
                                             2 * os::page_size());
