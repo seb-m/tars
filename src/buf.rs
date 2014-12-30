@@ -13,7 +13,6 @@ use std::ops;
 use std::ptr;
 use std::rand::Rng;
 use std::raw::Slice;
-use std::slice::{Iter, IterMut};
 
 use allocator::{Allocator, KeyAllocator, DefaultBufferAllocator};
 use key::ProtKey;
@@ -105,7 +104,7 @@ impl<T: Copy, A: Allocator> ProtBuf<T, A> {
 
     fn with_length(length: uint) -> ProtBuf<T, A> {
         if mem::size_of::<T>() == 0 || length == 0 {
-            return ProtBuf::from_raw_parts(0, 0 as *mut T);
+            return ProtBuf::from_raw_parts(0, heap::EMPTY as *mut T);
         }
 
         let ptr = unsafe {
@@ -192,145 +191,48 @@ impl<T: Copy, A: Allocator> ProtBuf<T, A> {
 
     /// Build a new instance by concatenating `ProtBuf` `items` together.
     pub fn from_bufs(items: &[&ProtBuf<T, A>]) -> ProtBuf<T, A> {
-        let v: Vec<&[T]> = items.iter().map(|x| (*x)[]).collect();
-        ProtBuf::from_slices(v[])
-    }
-
-    /// Return an immutable pointer to buffer's memory.
-    pub fn as_ptr(&self) -> *const T {
-        // (seb) Comment copied from vec.rs:
-        // If we have a 0-sized vector, then the base pointer should not be NULL
-        // because an iterator over the slice will attempt to yield the base
-        // pointer as the first element in the vector, but this will end up
-        // being Some(NULL) which is optimized to None.
-        if mem::size_of::<T>() == 0 {
-            heap::EMPTY as *const T
-        } else {
-            self.ptr as *const T
-        }
-    }
-
-    /// Return a mutable pointer to buffer's memory.
-    pub fn as_mut_ptr(&mut self) -> *mut T {
-        // see above for the 0-size check
-        if mem::size_of::<T>() == 0 {
-            heap::EMPTY as *mut T
-        } else {
-            self.ptr
-        }
+        let v: Vec<&[T]> = items.iter().map(|x| (*x).as_slice()).collect();
+        ProtBuf::from_slices(v.as_slice())
     }
 
     /// Return a mutable slice into `self`.
     pub fn as_mut_slice(&mut self) -> &mut [T] {
         unsafe {
             mem::transmute(Slice {
-                data: self.as_mut_ptr() as *const T,
+                data: self.ptr as *const T,
                 len: self.len
             })
         }
     }
 
-    /// Cast `self` with another type and return a slice on it.
-    pub fn as_cast<U>(&self) -> &[U] {
+    /// Cast `self` to another compatible type and return a slice on it.
+    pub fn cast_to_slice<U>(&self) -> &[U] {
         let bytes_size = self.len_bytes();
         let dst_type_size = mem::size_of::<U>();
-        assert!(bytes_size > 0 && bytes_size % dst_type_size == 0);
+        assert!(mem::min_align_of::<T>() == mem::min_align_of::<U>());
+        assert!(bytes_size > 0 && dst_type_size > 0 &&
+                bytes_size >= dst_type_size && bytes_size % dst_type_size == 0);
         unsafe {
             mem::transmute(Slice {
-                data: self.as_ptr() as *const U,
-                len: bytes_size / dst_type_size
+                data: self.ptr as *const U,
+                len: bytes_size.checked_div(dst_type_size).unwrap()
             })
         }
     }
 
-    /// Cast `self` with another type and return a mut slice on it.
-    pub fn as_mut_cast<U>(&mut self) -> &mut [U] {
+    /// Cast `self` to another compatible type and return a mut slice on it.
+    pub fn cast_to_slice_mut<U>(&mut self) -> &mut [U] {
         let bytes_size = self.len_bytes();
         let dst_type_size = mem::size_of::<U>();
-        assert!(bytes_size > 0 && bytes_size % dst_type_size == 0);
+        assert!(mem::min_align_of::<T>() == mem::min_align_of::<U>());
+        assert!(bytes_size > 0 && dst_type_size > 0 &&
+                bytes_size >= dst_type_size && bytes_size % dst_type_size == 0);
         unsafe {
             mem::transmute(Slice {
-                data: self.as_ptr() as *const U,
-                len: bytes_size / dst_type_size
+                data: self.ptr as *const U,
+                len: bytes_size.checked_div(dst_type_size).unwrap()
             })
         }
-    }
-
-    /// Return a reference to the value at index `index`. Fails if
-    /// `index` is out of bounds.
-    pub fn get(&self, index: uint) -> &T {
-        &self[][index]
-    }
-
-    /// Return a mutable reference to the value at index `index`. Fails
-    /// if `index` is out of bounds.
-    pub fn get_mut(&mut self, index: uint) -> &mut T {
-        &mut self[mut][index]
-    }
-
-    /// Return an iterator over references to the elements of the buffer
-    /// in order.
-    pub fn iter(&self) -> Iter<T> {
-        self[].iter()
-    }
-
-    /// Return an iterator over mutable references to the elements of the
-    /// buffer in order.
-    pub fn iter_mut(&mut self) -> IterMut<T> {
-        self[mut].iter_mut()
-    }
-
-    /// Return a slice of self spanning the interval [`start`, `end`).
-    /// Fails when the slice (or part of it) is outside the bounds of self,
-    /// or when `start` > `end`.
-    pub fn slice(&self, start: uint, end: uint) -> &[T] {
-        self[][start..end]
-    }
-
-    /// Return a mutable slice of `self` between `start` and `end`.
-    /// Fails when `start` or `end` point outside the bounds of `self`, or when
-    /// `start` > `end`.
-    pub fn slice_mut(&mut self, start: uint, end: uint) -> &mut [T] {
-        self[mut][mut start..end]
-    }
-
-    /// Return a slice of `self` from `start` to the end of the buffer.
-    /// Fails when `start` points outside the bounds of self.
-    pub fn slice_from(&self, start: uint) -> &[T] {
-        self[][start..]
-    }
-
-    /// Return a mutable slice of self from `start` to the end of the buffer.
-    /// Fails when `start` points outside the bounds of self.
-    pub fn slice_from_mut(&mut self, start: uint) -> &mut [T] {
-        self[mut][mut start..]
-    }
-
-    /// Return a slice of self from the start of the buffer to `end`.
-    /// Fails when `end` points outside the bounds of self.
-    pub fn slice_to(&self, end: uint) -> &[T] {
-        self[][..end]
-    }
-
-    /// Return a mutable slice of self from the start of the buffer to `end`.
-    /// Fails when `end` points outside the bounds of self.
-    pub fn slice_to_mut(&mut self, end: uint) -> &mut [T] {
-        self[mut][mut ..end]
-    }
-
-    /// Return a pair of mutable slices that divides the buffer at an index.
-    ///
-    /// The first will contain all indices from `[0, mid)` (excluding the
-    /// index `mid` itself) and the second will contain all indices from
-    /// `[mid, len)` (excluding the index `len` itself). Fails if
-    /// `mid > len`.
-    pub fn split_at_mut(&mut self, mid: uint) -> (&mut [T], &mut [T]) {
-        self[mut].split_at_mut(mid)
-    }
-
-    /// Reverse the order of elements in a buffer, in place.
-    pub fn reverse(&mut self) {
-        self[mut].reverse()
     }
 }
 
@@ -339,7 +241,7 @@ impl<T: Copy, A: Allocator> AsSlice<T> for ProtBuf<T, A> {
     fn as_slice(&self) -> &[T] {
         unsafe {
             mem::transmute(Slice {
-                data: self.as_ptr(),
+                data: self.ptr,
                 len: self.len
             })
         }
@@ -385,19 +287,19 @@ impl<T: Copy, A: Allocator> Drop for ProtBuf<T, A> {
 
 impl<T: Copy, A: Allocator> Clone for ProtBuf<T, A> {
     fn clone(&self) -> ProtBuf<T, A> {
-        ProtBuf::from_slice(self[])
+        ProtBuf::from_slice(self.as_slice())
     }
 }
 
 impl<T: Copy, A: Allocator> Index<uint, T> for ProtBuf<T, A> {
     fn index(&self, index: &uint) -> &T {
-        self.get(*index)
+        &self.as_slice()[*index]
     }
 }
 
 impl<T: Copy, A: Allocator> IndexMut<uint, T> for ProtBuf<T, A> {
     fn index_mut(&mut self, index: &uint) -> &mut T {
-        self.get_mut(*index)
+        &mut self.as_mut_slice()[*index]
     }
 }
 
@@ -452,7 +354,7 @@ impl<T: Copy, A: Allocator> ops::DerefMut<[T]> for ProtBuf<T, A> {
 
 impl<T: Copy, A: Allocator> PartialEq for ProtBuf<T, A> {
     fn eq(&self, other: &ProtBuf<T, A>) -> bool {
-        utils::bytes_eq(self[], other[])
+        utils::bytes_eq(self.as_slice(), other.as_slice())
     }
 }
 
@@ -461,7 +363,7 @@ impl<T: Copy, A: Allocator> Eq for ProtBuf<T, A> {
 
 impl<T: fmt::Show + Copy, A: Allocator> fmt::Show for ProtBuf<T, A> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self[].fmt(f)
+        self.as_slice().fmt(f)
     }
 }
 
@@ -470,7 +372,7 @@ impl<A: Allocator,
      S: Encoder<E>,
      T: Encodable<S, E> + Copy> Encodable<S, E> for ProtBuf<T, A> {
     fn encode(&self, s: &mut S) -> Result<(), E> {
-        self[].encode(s)
+        self.as_slice().encode(s)
     }
 }
 
@@ -491,7 +393,7 @@ impl<A: Allocator,
 
 impl<A: Allocator> ToHex for ProtBuf<u8, A> {
     fn to_hex(&self) -> String {
-        self[].to_hex()
+        self.as_slice().to_hex()
     }
 }
 
@@ -508,25 +410,28 @@ mod test {
         let mut s: [u8, ..256] = [0, ..256];
 
         let a: ProtBuf<i64, NullHeapAllocator> = ProtBuf::new_zero(256);
-        assert!(a[] == r[]);
+        assert!(a.as_slice() == r.as_slice());
 
         for i in range(0u, 256) {
             r[i] = i as i64;
             s[i] = i as u8;
         }
 
-        let b: ProtBuf<i64, NullHeapAllocator> = ProtBuf::from_bytes(s[]);
-        assert!(b[] == r[]);
+        let b: ProtBuf<i64, NullHeapAllocator> =
+            ProtBuf::from_bytes(s.as_slice());
+        assert!(b.as_slice() == r.as_slice());
 
-        let c: ProtBuf<i64, NullHeapAllocator> = ProtBuf::from_slice(r[]);
-        assert!(c[] == r[]);
+        let c: ProtBuf<i64, NullHeapAllocator> =
+            ProtBuf::from_slice(r.as_slice());
+        assert!(c.as_slice() == r.as_slice());
 
         let d: ProtBuf<i64, NullHeapAllocator> = unsafe {
             ProtBuf::from_raw_buf(c.as_ptr(), c.len())
         };
-        assert!(d[] == c[]);
+        assert!(d.as_slice() == c.as_slice());
 
-        let e: ProtBuf<i64, NullHeapAllocator> = ProtBuf::from_slice(r[]);
+        let e: ProtBuf<i64, NullHeapAllocator> =
+            ProtBuf::from_slice(r.as_slice());
         assert!(d == e);
     }
 
@@ -536,7 +441,7 @@ mod test {
         let mut s: [u8, ..256] = [0, ..256];
 
         let a: ProtBuf<i64, ProtectedBufferAllocator> = ProtBuf::new_zero(256);
-        assert!(a[] == r[]);
+        assert!(a.as_slice() == r.as_slice());
 
         for i in range(0u, 256) {
             r[i] = i as i64;
@@ -544,19 +449,20 @@ mod test {
         }
 
         let b: ProtBuf<i64, ProtectedBufferAllocator> =
-            ProtBuf::from_bytes(s[]);
-        assert!(b[] == r[]);
+            ProtBuf::from_bytes(s.as_slice());
+        assert!(b.as_slice() == r.as_slice());
 
-        let c: ProtBuf<i64, NullHeapAllocator> = ProtBuf::from_slice(r[]);
-        assert!(c[] == r[]);
+        let c: ProtBuf<i64, NullHeapAllocator> =
+            ProtBuf::from_slice(r.as_slice());
+        assert!(c.as_slice() == r.as_slice());
 
         let d: ProtBuf<i64, ProtectedBufferAllocator> = unsafe {
             ProtBuf::from_raw_buf(c.as_ptr(), c.len())
         };
-        assert!(d[] == c[]);
+        assert!(d.as_slice() == c.as_slice());
 
         let e: ProtBuf<i64, ProtectedBufferAllocator> =
-            ProtBuf::from_slice(r[]);
+            ProtBuf::from_slice(r.as_slice());
         assert!(d == e);
     }
 
