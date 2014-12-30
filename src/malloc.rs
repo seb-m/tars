@@ -306,10 +306,10 @@ struct Dir {
     // with slots of size-class 2^i (except for i=0 used to handle allocations
     // of size 0 and also for the first indexes which might remain unused
     // depending on the pagesize and the value of MAX_CHUNK_MAPPING).
-    chunks1: [*mut u8, ..MAX_CHUNK_SHIFT],
+    chunks1: [*mut u8; MAX_CHUNK_SHIFT],
     // Pointers to the last chunks of their respective chunk lists inserted
     // in chunks1.
-    chunks2: [*mut u8, ..MAX_CHUNK_SHIFT],
+    chunks2: [*mut u8; MAX_CHUNK_SHIFT],
     // Canary.
     canary2: uint,
     // Statistics.
@@ -326,7 +326,7 @@ struct Stats {
     // Number of allocated Chunks.
     chunks: uint,
     // Distribution of chunks in their respective size-classes.
-    chunks_classes: [uint, ..MAX_CHUNK_SHIFT],
+    chunks_classes: [uint; MAX_CHUNK_SHIFT],
     // Number of deallocated chunks.
     chunks_dealloc: uint,
     // Number of cached chunks.
@@ -373,7 +373,7 @@ struct Region {
     // Next fields are only relevant for chunks.
 
     // Bits mapping for tracking free slots in chunks of a given size-class.
-    mapping: [u8, ..MAX_CHUNK_MAPPING],
+    mapping: [u8; MAX_CHUNK_MAPPING],
     // Next referenced chunk of the same size-class also with free slots; or
     // next cached chunk when inserted in cache.
     next: *mut u8,
@@ -1031,7 +1031,7 @@ impl Stats {
             larges: 0,
             larges_bytes: 0,
             chunks: 0,
-            chunks_classes: [0, ..MAX_CHUNK_SHIFT],
+            chunks_classes: [0; MAX_CHUNK_SHIFT],
             chunks_dealloc: 0,
             cached: 0,
             reused: 0,
@@ -1445,8 +1445,8 @@ mod test {
     #[test]
     fn test_malloc_chunks() {
         const NA: uint = 2048;
-        let mut p: [*mut u8, ..NA] = [ptr::null_mut(), ..NA];
-        let mut s: [uint, ..NA] = [0u, ..NA];
+        let mut p: [*mut u8; NA] = [ptr::null_mut(); NA];
+        let mut s: [uint; NA] = [0u; NA];
 
         for i in range(0u, NA) {
             p[i] = unsafe {
@@ -1502,8 +1502,8 @@ mod test {
     #[test]
     fn test_malloc_large() {
         const NA: uint = 2048;
-        let mut p: [*mut u8, ..NA] = [ptr::null_mut(), ..NA];
-        let mut s: [uint, ..NA] = [0u, ..NA];
+        let mut p: [*mut u8; NA] = [ptr::null_mut(); NA];
+        let mut s: [uint; NA] = [0u; NA];
 
         for i in range(0u, NA) {
             p[i] = unsafe {
@@ -1536,8 +1536,8 @@ mod test {
     #[test]
     fn test_malloc_keys() {
         const NA: uint = 2048;
-        let mut p: [*mut u8, ..NA] = [ptr::null_mut(), ..NA];
-        let mut s: [uint, ..NA] = [0u, ..NA];
+        let mut p: [*mut u8; NA] = [ptr::null_mut(); NA];
+        let mut s: [uint; NA] = [0u; NA];
 
         for i in range(0u, NA) {
             p[i] = unsafe {
@@ -1569,8 +1569,8 @@ mod test {
     #[test]
     fn test_malloc_mixed() {
         const NA: uint = 8192;
-        let mut p: [*mut u8, ..NA] = [ptr::null_mut(), ..NA];
-        let mut s: [uint, ..NA] = [0u, ..NA];
+        let mut p: [*mut u8; NA] = [ptr::null_mut(); NA];
+        let mut s: [uint; NA] = [0u; NA];
 
         for i in range(0u, NA) {
             p[i] = unsafe {

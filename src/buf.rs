@@ -406,8 +406,8 @@ mod test {
 
     #[test]
     fn test_basic_dummy() {
-        let mut r: [i64, ..256] = [0, ..256];
-        let mut s: [u8, ..256] = [0, ..256];
+        let mut r: [i64; 256] = [0; 256];
+        let mut s: [u8; 256] = [0; 256];
 
         let a: ProtBuf<i64, NullHeapAllocator> = ProtBuf::new_zero(256);
         assert!(a.as_slice() == r.as_slice());
@@ -437,8 +437,8 @@ mod test {
 
     #[test]
     fn test_basic_guarded() {
-        let mut r: [i64, ..256] = [0, ..256];
-        let mut s: [u8, ..256] = [0, ..256];
+        let mut r: [i64; 256] = [0; 256];
+        let mut s: [u8; 256] = [0; 256];
 
         let a: ProtBuf<i64, ProtectedBufferAllocator> = ProtBuf::new_zero(256);
         assert!(a.as_slice() == r.as_slice());

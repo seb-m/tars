@@ -96,8 +96,8 @@ mod tests {
 
     #[test]
     fn test_bytes_eq() {
-        let a: [u8, ..64] = [0u8, ..64];
-        let b: [u8, ..64] = [0u8, ..64];
+        let a: [u8; 64] = [0u8; 64];
+        let b: [u8; 64] = [0u8; 64];
         assert!(super::bytes_eq(&a, &b));
 
         for _ in range(0u, 256) {
