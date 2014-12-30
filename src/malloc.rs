@@ -401,7 +401,7 @@ impl Dir {
 
         let dir = dir_alloc() as *mut Dir;
         (*dir).canary1 = utils::os_rng().gen();
-        (*dir).canary2 = (*dir).canary1 ^ dir.to_uint();
+        (*dir).canary2 = (*dir).canary1 ^ dir as uint;
         (*dir).total = INITIAL_REGIONS;
         (*dir).free = INITIAL_REGIONS;
         (*dir).regions = regions_alloc((*dir).total) as *mut Region;
@@ -439,7 +439,7 @@ impl Dir {
 
     #[inline]
     pub fn check_integrity(&self) -> bool {
-        self.canary2 == self.canary1 ^ (self as *const Dir).to_uint()
+        self.canary2 == self.canary1 ^ (self as *const Dir as uint)
     }
 
     #[inline]
@@ -521,7 +521,7 @@ impl Dir {
 
     #[inline]
     fn object_to_region_index(&self, object: *mut u8) -> uint {
-        hash::hash(&mmap::mask_pointer(object).to_uint()) as uint &
+        hash::hash(&(mmap::mask_pointer(object) as uint)) as uint &
             self.region_mask()
     }
 
@@ -909,8 +909,8 @@ impl Dir {
                     return;
                 }
 
-                let chunk_offset = ptr.to_uint().checked_sub(
-                    region.object.to_uint()).unwrap();
+                let chunk_offset = (ptr as uint).checked_sub(
+                    region.object as uint).unwrap();
 
                 // Free chunk slot.
                 self.free_chunk_slot(region_index, chunk_offset);
@@ -1075,7 +1075,7 @@ impl Region {
             canary_dir: uint) {
         assert!(object.is_not_null());
         self.object = object;
-        self.canary = canary_dir ^ object.to_uint();
+        self.canary = canary_dir ^ object as uint;
         self.kind = if chunk {
             RegionType::Chunk
         } else {
@@ -1113,7 +1113,7 @@ impl Region {
 
     #[inline]
     fn check_integrity(&self, canary_dir: uint) -> bool {
-        !self.is_free() && self.canary == canary_dir ^ self.object.to_uint()
+        !self.is_free() && self.canary == canary_dir ^ self.object as uint
     }
 
     unsafe fn set_as_cache(&mut self) {
@@ -1648,7 +1648,7 @@ mod test {
                 super::malloc_key(size, align)
             };
             assert!(sptr.is_not_null() && kptr.is_not_null());
-            assert!(sptr.to_uint() % align == 0 && kptr.to_uint() % align == 0);
+            assert!(sptr as uint % align == 0 && kptr as uint % align == 0);
 
             for i in range(0u, size) {
                 write_byte(sptr, i);
@@ -1899,7 +1899,7 @@ mod test {
         let size = 10;
 
         let mut futures = Vec::from_fn(size, |_| Future::spawn(move || {
-            super::thread_dir().dir.borrow().dir.to_uint()
+            super::thread_dir().dir.borrow().dir as uint
         }));
 
         let addrs: HashSet<uint> =

@@ -44,7 +44,7 @@ pub fn page_mask() -> uint {
 
 #[inline]
 pub fn mask_pointer<T>(ptr: *mut T) -> *mut T {
-    (ptr.to_uint() & !page_mask()) as *mut T
+    (ptr as uint & !page_mask()) as *mut T
 }
 
 #[inline]
