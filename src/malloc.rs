@@ -1416,7 +1416,7 @@ mod test {
     use std::iter;
     use std::os;
     use std::ptr;
-    use std::rand::{task_rng, Rng};
+    use std::rand::{thread_rng, Rng};
     use std::sync::Future;
     use std::uint;
     use test::Bencher;
@@ -1450,7 +1450,7 @@ mod test {
 
         for i in range(0u, NA) {
             p[i] = unsafe {
-                let size = task_rng().gen_range(0u, os::page_size() >> 1);
+                let size = thread_rng().gen_range(0u, os::page_size() >> 1);
                 s[i] = size;
                 super::malloc(size, 0)
             };
@@ -1473,7 +1473,7 @@ mod test {
 
         for i in iter::range_step(0u, NA, 16) {
             p[i] = unsafe {
-                let size = task_rng().gen_range(0u, os::page_size() >> 1);
+                let size = thread_rng().gen_range(0u, os::page_size() >> 1);
                 s[i] = size;
                 super::malloc(size, 0)
             };
@@ -1507,8 +1507,8 @@ mod test {
 
         for i in range(0u, NA) {
             p[i] = unsafe {
-                let size = task_rng().gen_range((os::page_size() >> 1) + 1,
-                                                os::page_size() << 3);
+                let size = thread_rng().gen_range((os::page_size() >> 1) + 1,
+                                                  os::page_size() << 3);
                 s[i] = size;
                 super::malloc(size, 0)
             };
@@ -1541,7 +1541,7 @@ mod test {
 
         for i in range(0u, NA) {
             p[i] = unsafe {
-                let size = task_rng().gen_range(0, os::page_size() << 3);
+                let size = thread_rng().gen_range(0, os::page_size() << 3);
                 s[i] = size;
                 super::malloc_key(size, 0)
             };
@@ -1574,7 +1574,7 @@ mod test {
 
         for i in range(0u, NA) {
             p[i] = unsafe {
-                let size = task_rng().gen_range(0u, os::page_size() << 2);
+                let size = thread_rng().gen_range(0u, os::page_size() << 2);
                 s[i] = size;
                 super::malloc(size, 0)
             };
@@ -1601,7 +1601,7 @@ mod test {
 
         for i in iter::range_step(0u, NA, 16) {
             p[i] = unsafe {
-                let size = task_rng().gen_range(0u, os::page_size() << 4);
+                let size = thread_rng().gen_range(0u, os::page_size() << 4);
                 s[i] = size;
                 super::malloc(size, 0)
             };
@@ -1639,7 +1639,7 @@ mod test {
         let mut size;
 
         while align < os::page_size() {
-            size = task_rng().gen_range(0u, os::page_size() << 2);
+            size = thread_rng().gen_range(0u, os::page_size() << 2);
 
             sptr = unsafe {
                 super::malloc(size, align)
@@ -1797,8 +1797,8 @@ mod test {
 
     #[test]
     fn test_realloc() {
-        let size1 = task_rng().gen_range(0u, os::page_size() << 2);
-        let size2 = task_rng().gen_range(0u, os::page_size() << 2);
+        let size1 = thread_rng().gen_range(0u, os::page_size() << 2);
+        let size2 = thread_rng().gen_range(0u, os::page_size() << 2);
 
         unsafe {
             let mut p1 = super::malloc(size1, 0);
@@ -1840,7 +1840,7 @@ mod test {
 
     #[test]
     fn test_realloc_zero() {
-        let size = task_rng().gen_range(0u, os::page_size() << 2);
+        let size = thread_rng().gen_range(0u, os::page_size() << 2);
 
         unsafe {
             let mut p1 = super::malloc(size, 0);

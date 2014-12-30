@@ -2,7 +2,7 @@
 use std::intrinsics;
 use std::mem;
 use std::num::Int;
-use std::rand::{mod, Rng, TaskRng};
+use std::rand::{mod, Rng, ThreadRng};
 use std::rand::distributions::range::SampleRange;
 use std::rand::os::OsRng;
 
@@ -59,8 +59,8 @@ pub fn bytes_eq<T>(x: &[T], y: &[T]) -> bool {
 
 
 // Instantiate a PRNG faster than `os_rng()`.
-pub fn rng() -> TaskRng {
-    rand::task_rng()
+pub fn rng() -> ThreadRng {
+    rand::thread_rng()
 }
 
 // Instantiate a PRNG based on `urandom`.
