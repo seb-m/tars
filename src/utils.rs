@@ -101,9 +101,9 @@ mod tests {
         assert!(super::bytes_eq(&a, &b));
 
         for _ in range(0u, 256) {
-            let va = Vec::from_fn(64, |_| random::<u8>());
+            let va: Vec<u8> = range(0u, 64).map(|_| random::<u8>()).collect();
             let a = va.container_as_bytes();
-            let vb = Vec::from_fn(64, |_| random::<u8>());
+            let vb: Vec<u8> = range(0u, 64).map(|_| random::<u8>()).collect();
             let b = vb.container_as_bytes();
             assert_eq!(super::bytes_eq(a, b), a == b);
         }

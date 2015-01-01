@@ -1898,9 +1898,10 @@ mod test {
     fn test_dir_addr() {
         let size = 10;
 
-        let mut futures = Vec::from_fn(size, |_| Future::spawn(move || {
-            super::thread_dir().dir.borrow().dir as uint
-        }));
+        let mut futures: Vec<_> =
+            range(0u, size).map(|_| Future::spawn(move || {
+                super::thread_dir().dir.borrow().dir as uint
+            })).collect();
 
         let addrs: HashSet<uint> =
             futures.iter_mut().map(|ref mut ft| ft.get()).collect();
