@@ -2,7 +2,7 @@
 use std::intrinsics;
 use std::mem;
 use std::num::Int;
-use std::rand::{mod, Rng, ThreadRng};
+use std::rand::{self, Rng, ThreadRng};
 use std::rand::distributions::range::SampleRange;
 use std::rand::os::OsRng;
 

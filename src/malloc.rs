@@ -52,7 +52,7 @@ use std::ptr;
 use std::rand::Rng;
 use std::rc::Rc;
 
-use mmap::{mod, RangePos, Prot};
+use mmap::{self, RangePos, Prot};
 use utils;
 
 
@@ -342,7 +342,7 @@ struct Stats {
     prot_nones: uint
 }
 
-#[deriving(Copy)]
+#[derive(Copy)]
 enum RegionType {
     // Region is free, no object attached.
     Free = 0,

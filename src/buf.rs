@@ -148,16 +148,6 @@ impl<T: Copy, A: Allocator> ProtBuf<T, A> {
         ProtBuf::new_rand(length, &mut utils::os_rng())
     }
 
-    /// New allocated buffer with its `length` elements initialized from
-    /// provided closure `op`.
-    pub fn from_fn(length: uint, op: |uint| -> T) -> ProtBuf<T, A> {
-        let mut n = ProtBuf::with_length(length);
-        for i in range(0u, length) {
-            n[i] = op(i);
-        }
-        n
-    }
-
     /// New buffer with elements copied from slice `values`.
     pub fn from_slice(values: &[T]) -> ProtBuf<T, A> {
         unsafe {
@@ -252,6 +242,17 @@ impl<T: Copy, A: KeyAllocator> ProtBuf<T, A> {
     /// Transform `self` into a protected key `ProtKey`.
     pub fn into_key(self) -> ProtKey<T, A> {
         ProtKey::new(self)
+    }
+}
+
+impl<T: Copy, A: Allocator> FromIterator<T> for ProtBuf<T, A> {
+    fn from_iter<I>(iterator: I) -> ProtBuf<T, A>
+      where I: ExactSizeIterator<T> {
+        let mut n = ProtBuf::with_length(iterator.len());
+        for (count, element) in iterator.enumerate() {
+            n[count] = element;
+        }
+        n
     }
 }
 

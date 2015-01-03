@@ -55,7 +55,7 @@ pub type DefaultKeyAllocator = ProtectedKeyAllocator;
 /// allocator **does not implement any protection at all**. Provided only for
 /// testing and compatibilty purposes.
 #[doc(hidden)]
-#[deriving(Copy)]
+#[derive(Copy)]
 pub struct NullHeapAllocator;
 
 impl Allocator for NullHeapAllocator {
@@ -90,7 +90,7 @@ impl KeyAllocator for NullHeapAllocator {
 /// Use a custom allocator to provide various memory protections in
 /// order to help protect data buffers. Its typical use is as allocator
 /// of `ProtBuf` buffers.
-#[deriving(Copy)]
+#[derive(Copy)]
 pub struct ProtectedBufferAllocator;
 
 impl Allocator for ProtectedBufferAllocator {
@@ -111,7 +111,7 @@ impl Allocator for ProtectedBufferAllocator {
 /// Use a custom allocator, similar to `ProtectedBufferAllocator` but allow
 /// for more granularity in the control of its memory. Its typical use
 /// is as allocator of `ProtKey` keys.
-#[deriving(Copy)]
+#[derive(Copy)]
 pub struct ProtectedKeyAllocator;
 
 impl Allocator for ProtectedKeyAllocator {

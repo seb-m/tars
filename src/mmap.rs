@@ -55,7 +55,7 @@ fn page_round(size: uint) -> uint {
 
 /// Hint at how the buffer should be positionned in the allocated
 /// region.
-#[deriving(Copy)]
+#[derive(Copy)]
 pub enum RangePos {
     Start,
     End,
@@ -65,7 +65,7 @@ pub enum RangePos {
 
 /// Memory protection flags. `None` means no `Read` and no `Write`
 /// allowed.
-#[deriving(Copy)]
+#[derive(Copy)]
 pub enum Prot {
     None,
     Read,

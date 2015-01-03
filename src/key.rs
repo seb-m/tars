@@ -1,6 +1,6 @@
 //! Protected key
 //!
-use std::cell::{mod, Cell, Ref, RefCell, RefMut};
+use std::cell::{self, Cell, Ref, RefCell, RefMut};
 use std::fmt;
 use std::num::Int;
 use std::rc::Rc;
