@@ -13,6 +13,7 @@
 #![feature(default_type_params)]
 #![feature(unsafe_destructor)]
 #![feature(slicing_syntax)]
+#![feature(associated_types)]
 #![feature(phase)]
 
 #[cfg(test)] extern crate test;

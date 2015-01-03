@@ -3,6 +3,7 @@
 use std::cell::{self, Cell, Ref, RefCell, RefMut};
 use std::fmt;
 use std::num::Int;
+use std::ops::{Deref, DerefMut};
 use std::rc::Rc;
 
 use allocator::{Allocator, KeyAllocator, DefaultKeyAllocator};
@@ -228,7 +229,9 @@ impl<'a, T: Copy, A: KeyAllocator> Drop for ProtKeyRead<'a, T, A> {
     }
 }
 
-impl<'a, T: Copy, A: KeyAllocator> Deref<ProtBuf<T, A>> for ProtKeyRead<'a, T, A> {
+impl<'a, T: Copy, A: KeyAllocator> Deref for ProtKeyRead<'a, T, A> {
+    type Target = ProtBuf<T, A>;
+
     fn deref(&self) -> &ProtBuf<T, A> {
         &*self.ref_key
     }
@@ -288,15 +291,16 @@ impl<'a, T: Copy, A: KeyAllocator> Drop for ProtKeyWrite<'a, T, A> {
 /// This method is mandatory,  but it should not be used for reading the
 /// content of the underlying key...
 #[allow(unreachable_code)]
-impl<'a, T: Copy, A: KeyAllocator> Deref<ProtBuf<T, A>> for ProtKeyWrite<'a, T, A> {
+impl<'a, T: Copy, A: KeyAllocator> Deref for ProtKeyWrite<'a, T, A> {
+    type Target = ProtBuf<T, A>;
+
     fn deref(&self) -> &ProtBuf<T, A> {
         panic!("key must only be written");
         &*self.ref_key
     }
 }
 
-impl<'a, T: Copy,
-      A: KeyAllocator> DerefMut<ProtBuf<T, A>> for ProtKeyWrite<'a, T, A> {
+impl<'a, T: Copy, A: KeyAllocator> DerefMut for ProtKeyWrite<'a, T, A> {
     fn deref_mut(&mut self) -> &mut ProtBuf<T, A> {
         &mut *self.ref_key
     }

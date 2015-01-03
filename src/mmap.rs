@@ -5,7 +5,7 @@ use libc::funcs::posix88::mman;
 use libc::types::common::c95::c_void;
 use libc::types::os::arch::c95::{c_int, size_t};
 use std::cmp;
-use std::num::{Int, UnsignedInt};
+use std::num::{Int, UnsignedInt, ToPrimitive};
 use std::os;
 use std::ptr;
 use std::sync::{Once, ONCE_INIT};
@@ -29,7 +29,7 @@ pub fn page_size() -> uint {
     static mut pagesize: uint = 0;
 
     unsafe {
-        ONCE.doit(|| {
+        ONCE.call_once(|| {
             pagesize = os::page_size();
         });
 

@@ -47,7 +47,8 @@ use std::fmt;
 use std::hash;
 use std::iter;
 use std::mem;
-use std::num::{Int, UnsignedInt};
+use std::num::{Int, UnsignedInt, ToPrimitive};
+use std::ops::{Deref, DerefMut};
 use std::ptr;
 use std::rand::Rng;
 use std::rc::Rc;
@@ -254,7 +255,9 @@ impl Drop for LocalDir {
     }
 }
 
-impl Deref<Dir> for LocalDir {
+impl Deref for LocalDir {
+    type Target = Dir;
+
     fn deref(&self) -> &Dir {
         unsafe {
             &*self.dir
@@ -262,7 +265,7 @@ impl Deref<Dir> for LocalDir {
     }
 }
 
-impl DerefMut<Dir> for LocalDir {
+impl DerefMut for LocalDir {
     fn deref_mut(&mut self) -> &mut Dir {
         unsafe {
             &mut *self.dir
@@ -1414,6 +1417,7 @@ mod test {
     use std::cmp;
     use std::collections::HashSet;
     use std::iter;
+    use std::num::ToPrimitive;
     use std::os;
     use std::ptr;
     use std::rand::{thread_rng, Rng};

@@ -5,11 +5,11 @@ use rustc_serialize::{Encodable, Encoder, Decodable, Decoder};
 use rustc_serialize::hex::ToHex;
 use std::fmt;
 use std::intrinsics;
-use std::iter::AdditiveIterator;
+use std::iter::{AdditiveIterator, FromIterator};
 use std::kinds::marker::NoSync;
 use std::mem;
-use std::num::Int;
-use std::ops;
+use std::num::{Int, FromPrimitive};
+use std::ops::{self, Deref, DerefMut, Index, IndexMut};
 use std::ptr;
 use std::rand::Rng;
 use std::raw::Slice;
@@ -341,13 +341,15 @@ impl<T: Copy, A: Allocator> ops::SliceMut<uint, [T]> for ProtBuf<T, A> {
     }
 }
 
-impl<T: Copy, A: Allocator> ops::Deref<[T]> for ProtBuf<T, A> {
+impl<T: Copy, A: Allocator> Deref for ProtBuf<T, A> {
+    type Target = [T];
+
     fn deref(&self) -> &[T] {
         self.as_slice()
     }
 }
 
-impl<T: Copy, A: Allocator> ops::DerefMut<[T]> for ProtBuf<T, A> {
+impl<T: Copy, A: Allocator> DerefMut for ProtBuf<T, A> {
     fn deref_mut(&mut self) -> &mut [T] {
         self.as_mut_slice()
     }
@@ -367,6 +369,30 @@ impl<T: fmt::Show + Copy, A: Allocator> fmt::Show for ProtBuf<T, A> {
         self.as_slice().fmt(f)
     }
 }
+
+macro_rules! hex_fmt {
+    ($T:ty, $U:ty) => {
+        impl<A: Allocator> $T for ProtBuf<$U, A> {
+            fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+                for i in self.as_slice().iter() {
+                    try!(i.fmt(f));
+                }
+                Ok(())
+            }
+        }
+    }
+}
+
+hex_fmt!(fmt::UpperHex, uint);
+hex_fmt!(fmt::UpperHex, u8);
+hex_fmt!(fmt::UpperHex, u16);
+hex_fmt!(fmt::UpperHex, u32);
+hex_fmt!(fmt::UpperHex, u64);
+hex_fmt!(fmt::LowerHex, uint);
+hex_fmt!(fmt::LowerHex, u8);
+hex_fmt!(fmt::LowerHex, u16);
+hex_fmt!(fmt::LowerHex, u32);
+hex_fmt!(fmt::LowerHex, u64);
 
 impl<A: Allocator,
      E,
