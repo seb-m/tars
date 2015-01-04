@@ -1,8 +1,6 @@
 //! Protected buffer
 //!
 use alloc::heap;
-use rustc_serialize::{Encodable, Encoder, Decodable, Decoder};
-use rustc_serialize::hex::ToHex;
 use std::fmt;
 use std::intrinsics;
 use std::iter::{AdditiveIterator, FromIterator};
@@ -393,36 +391,6 @@ hex_fmt!(fmt::LowerHex, u8);
 hex_fmt!(fmt::LowerHex, u16);
 hex_fmt!(fmt::LowerHex, u32);
 hex_fmt!(fmt::LowerHex, u64);
-
-impl<A: Allocator,
-     E,
-     S: Encoder<E>,
-     T: Encodable<S, E> + Copy> Encodable<S, E> for ProtBuf<T, A> {
-    fn encode(&self, s: &mut S) -> Result<(), E> {
-        self.as_slice().encode(s)
-    }
-}
-
-impl<A: Allocator,
-     E,
-     D: Decoder<E>,
-     T: Decodable<D, E> + Copy> Decodable<D, E> for ProtBuf<T, A> {
-    fn decode(d: &mut D) -> Result<ProtBuf<T, A>, E> {
-        d.read_seq(|d, len| {
-            let mut n = ProtBuf::with_length(len);
-            for i in range(0u, len) {
-                n[i] = try!(d.read_seq_elt(i, |d| Decodable::decode(d)));
-            }
-            Ok(n)
-        })
-    }
-}
-
-impl<A: Allocator> ToHex for ProtBuf<u8, A> {
-    fn to_hex(&self) -> String {
-        self.as_slice().to_hex()
-    }
-}
 
 
 #[cfg(test)]
