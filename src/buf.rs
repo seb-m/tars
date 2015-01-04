@@ -245,7 +245,7 @@ impl<T: Copy, A: KeyAllocator> ProtBuf<T, A> {
 
 impl<T: Copy, A: Allocator> FromIterator<T> for ProtBuf<T, A> {
     fn from_iter<I>(iterator: I) -> ProtBuf<T, A>
-      where I: ExactSizeIterator<T> {
+      where I: ExactSizeIterator + Iterator<Item=T> {
         let mut n = ProtBuf::with_length(iterator.len());
         for (count, element) in iterator.enumerate() {
             n[count] = element;
@@ -290,13 +290,17 @@ impl<T: Copy, A: Allocator> Clone for ProtBuf<T, A> {
     }
 }
 
-impl<T: Copy, A: Allocator> Index<uint, T> for ProtBuf<T, A> {
+impl<T: Copy, A: Allocator> Index<uint> for ProtBuf<T, A> {
+    type Output = T;
+
     fn index(&self, index: &uint) -> &T {
         &self.as_slice()[*index]
     }
 }
 
-impl<T: Copy, A: Allocator> IndexMut<uint, T> for ProtBuf<T, A> {
+impl<T: Copy, A: Allocator> IndexMut<uint> for ProtBuf<T, A> {
+    type Output = T;
+
     fn index_mut(&mut self, index: &uint) -> &mut T {
         &mut self.as_mut_slice()[*index]
     }
