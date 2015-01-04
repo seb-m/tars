@@ -1,5 +1,8 @@
 # TARS
 
+[![Build Status](https://travis-ci.org/seb-m/tars.svg?branch=master)](https://travis-ci.org/seb-m/tars)
+
+
 ## Description
 
 Data structure containers with protected memory.
