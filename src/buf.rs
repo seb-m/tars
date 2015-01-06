@@ -64,7 +64,7 @@ unsafe fn dealloc<A: Allocator, T>(ptr: *mut T, count: uint) {
 /// // Or more simply, like this with exactly the same result
 /// let mut buf: ProtBuf8 = ProtBuf::new_zero(42);
 ///
-/// assert!(buf[21] == 0);
+/// assert_eq!(buf[21], 0);
 ///
 /// // Use a slice to access and manipulate the underlying memory buffer
 /// my_function(buf.as_mut_slice());
@@ -201,7 +201,7 @@ impl<T: Copy, A: Allocator> ProtBuf<T, A> {
     pub fn cast_to_slice<U>(&self) -> &[U] {
         let bytes_size = self.len_bytes();
         let dst_type_size = mem::size_of::<U>();
-        assert!(mem::min_align_of::<T>() == mem::min_align_of::<U>());
+        assert_eq!(mem::min_align_of::<T>(), mem::min_align_of::<U>());
         assert!(bytes_size > 0 && dst_type_size > 0 &&
                 bytes_size >= dst_type_size && bytes_size % dst_type_size == 0);
         unsafe {
@@ -216,7 +216,7 @@ impl<T: Copy, A: Allocator> ProtBuf<T, A> {
     pub fn cast_to_slice_mut<U>(&mut self) -> &mut [U] {
         let bytes_size = self.len_bytes();
         let dst_type_size = mem::size_of::<U>();
-        assert!(mem::min_align_of::<T>() == mem::min_align_of::<U>());
+        assert_eq!(mem::min_align_of::<T>(), mem::min_align_of::<U>());
         assert!(bytes_size > 0 && dst_type_size > 0 &&
                 bytes_size >= dst_type_size && bytes_size % dst_type_size == 0);
         unsafe {
@@ -413,7 +413,7 @@ mod test {
         let mut s: [u8; 256] = [0; 256];
 
         let a: ProtBuf<i64, NullHeapAllocator> = ProtBuf::new_zero(256);
-        assert!(a.as_slice() == r.as_slice());
+        assert_eq!(a.as_slice(), r.as_slice());
 
         for i in range(0u, 256) {
             r[i] = i as i64;
@@ -422,20 +422,20 @@ mod test {
 
         let b: ProtBuf<i64, NullHeapAllocator> =
             ProtBuf::from_bytes(s.as_slice());
-        assert!(b.as_slice() == r.as_slice());
+        assert_eq!(b.as_slice(), r.as_slice());
 
         let c: ProtBuf<i64, NullHeapAllocator> =
             ProtBuf::from_slice(r.as_slice());
-        assert!(c.as_slice() == r.as_slice());
+        assert_eq!(c.as_slice(), r.as_slice());
 
         let d: ProtBuf<i64, NullHeapAllocator> = unsafe {
             ProtBuf::from_raw_buf(c.as_ptr(), c.len())
         };
-        assert!(d.as_slice() == c.as_slice());
+        assert_eq!(d.as_slice(), c.as_slice());
 
         let e: ProtBuf<i64, NullHeapAllocator> =
             ProtBuf::from_slice(r.as_slice());
-        assert!(d == e);
+        assert_eq!(d, e);
     }
 
     #[test]
@@ -444,7 +444,7 @@ mod test {
         let mut s: [u8; 256] = [0; 256];
 
         let a: ProtBuf<i64, ProtectedBufferAllocator> = ProtBuf::new_zero(256);
-        assert!(a.as_slice() == r.as_slice());
+        assert_eq!(a.as_slice(), r.as_slice());
 
         for i in range(0u, 256) {
             r[i] = i as i64;
@@ -453,20 +453,20 @@ mod test {
 
         let b: ProtBuf<i64, ProtectedBufferAllocator> =
             ProtBuf::from_bytes(s.as_slice());
-        assert!(b.as_slice() == r.as_slice());
+        assert_eq!(b.as_slice(), r.as_slice());
 
         let c: ProtBuf<i64, NullHeapAllocator> =
             ProtBuf::from_slice(r.as_slice());
-        assert!(c.as_slice() == r.as_slice());
+        assert_eq!(c.as_slice(), r.as_slice());
 
         let d: ProtBuf<i64, ProtectedBufferAllocator> = unsafe {
             ProtBuf::from_raw_buf(c.as_ptr(), c.len())
         };
-        assert!(d.as_slice() == c.as_slice());
+        assert_eq!(d.as_slice(), c.as_slice());
 
         let e: ProtBuf<i64, ProtectedBufferAllocator> =
             ProtBuf::from_slice(r.as_slice());
-        assert!(d == e);
+        assert_eq!(d, e);
     }
 
     #[test]

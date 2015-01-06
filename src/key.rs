@@ -321,22 +321,22 @@ mod test {
 
         let key = ProtKey::new(s1);
 
-        assert!(key.read().as_slice() == s2.as_slice());
-        assert!(key.read()[] == s2[]);
-        assert!(*key.read() == s2);
+        assert_eq!(key.read().as_slice(), s2.as_slice());
+        assert_eq!(key.read()[], s2[]);
+        assert_eq!(*key.read(), s2);
 
         {
             let r1 = key.read();
             let r2 = key.try_read().unwrap();
-            assert!(r1 == r2);
+            assert_eq!(r1, r2);
 
             assert!(key.try_write().is_none());
 
             let r3 = r1.clone_it();
-            assert!(r3 == r2);
+            assert_eq!(r3, r2);
         }
 
-        key.read_with(|k| assert!(k[] == s2.as_slice()));
+        key.read_with(|k| assert_eq!(k[], s2.as_slice()));
 
         assert!(key.try_write().is_some());
     }
@@ -350,7 +350,7 @@ mod test {
         for i in key.write().as_mut_slice().iter_mut() {
             *i = 0;
         }
-        assert!(*key.read() == zero);
+        assert_eq!(*key.read(), zero);
 
         {
             let _w = key.write();
@@ -360,7 +360,7 @@ mod test {
 
         let mut c = 0u;
         key.write_with(|k| {k[42] = 42; c = 1;});
-        assert!(c == 1);
+        assert_eq!(c, 1);
 
         assert!(key.try_write().is_some());
         assert!(key.try_read().is_some());

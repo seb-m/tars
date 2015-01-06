@@ -931,7 +931,7 @@ impl Dir {
                 }
             },
             RegionType::Large => {
-                assert!(region.object == ptr);
+                assert_eq!(region.object, ptr);
                 region.dealloc_data(false);
                 self.region_delete(region_index);
             },
@@ -958,9 +958,9 @@ impl Dir {
         let region = self.region_at_index_mut(region_index);
 
         assert!(region.check_integrity(canary_dir));
-        assert!(region.kind as uint == RegionType::Large as uint);
+        assert_eq!(region.kind as uint, RegionType::Large as uint);
 
-        assert!(region.object == ptr);
+        assert_eq!(region.object, ptr);
         mmap::protect(region.object, region.size, prot);
     }
 }
@@ -1120,7 +1120,7 @@ impl Region {
     }
 
     unsafe fn set_as_cache(&mut self) {
-        assert!(self.kind as uint == RegionType::Chunk as uint);
+        assert_eq!(self.kind as uint, RegionType::Chunk as uint);
 
         self.kind = RegionType::Cache;
         self.size = 0;
@@ -1130,7 +1130,7 @@ impl Region {
     }
 
     unsafe fn set_as_chunk(&mut self, chunk_size: uint) {
-        assert!(self.kind as uint == RegionType::Cache as uint);
+        assert_eq!(self.kind as uint, RegionType::Cache as uint);
 
         self.kind = RegionType::Chunk;
         self.size = chunk_size;
@@ -1147,8 +1147,8 @@ impl Region {
 
     #[inline]
     fn is_free(&self) -> bool {
-        debug_assert!(self.object.is_null() ==
-                      (self.kind as uint == RegionType::Free as uint));
+        debug_assert_eq!(self.object.is_null(),
+                         (self.kind as uint == RegionType::Free as uint));
         self.kind as uint == RegionType::Free as uint
     }
 
@@ -1440,8 +1440,8 @@ mod test {
 
     fn read_byte(ptr: *const u8, index: uint) {
         unsafe {
-            assert!(*ptr.offset(index.to_int().unwrap()) ==
-                    (index % 256) as u8);
+            assert_eq!(*ptr.offset(index.to_int().unwrap()),
+                       (index % 256) as u8);
         }
     }
 
@@ -1533,8 +1533,8 @@ mod test {
             }
         }
 
-        assert!(super::thread_dir().dir.borrow().total ==
-                super::thread_dir().dir.borrow().free);
+        assert_eq!(super::thread_dir().dir.borrow().total,
+                   super::thread_dir().dir.borrow().free);
     }
 
     #[test]
@@ -1566,8 +1566,8 @@ mod test {
             }
         }
 
-        assert!(super::thread_dir().dir.borrow().total ==
-                super::thread_dir().dir.borrow().free);
+        assert_eq!(super::thread_dir().dir.borrow().total,
+                   super::thread_dir().dir.borrow().free);
     }
 
     #[test]
@@ -1860,7 +1860,7 @@ mod test {
             let p2 = super::realloc(p1, 0, 0);
             assert!(!p2.is_null());
 
-            assert!(p1 == p2);
+            assert_eq!(p1, p2);
 
             super::free(p1);
             super::free(p2);
@@ -1875,7 +1875,7 @@ mod test {
             assert!(!p.is_null());
 
             for i in range(0u, os::page_size()) {
-                assert!(*p.offset(i as int) == 0);
+                assert_eq!(*p.offset(i as int), 0);
             }
             super::free(p);
 
@@ -1884,7 +1884,7 @@ mod test {
             assert!(!p.is_null());
 
             for i in range(0u, 42) {
-                assert!(*p.offset(i as int) == 0);
+                assert_eq!(*p.offset(i as int), 0);
             }
             super::free(p);
         }
@@ -1910,7 +1910,7 @@ mod test {
         let addrs: HashSet<uint> =
             futures.iter_mut().map(|ref mut ft| ft.get()).collect();
 
-        assert!(addrs.len() == size);
+        assert_eq!(addrs.len(), size);
         assert!(!addrs.contains(&0));
     }
 
