@@ -80,6 +80,10 @@ pub struct ProtBuf<T, A = DefaultBufferAllocator> {
     nosync: NoSync
 }
 
+// fixme
+//impl<T, A> !Sync for ProtBuf<T, A> {
+//}
+
 impl<T: Copy, A: Allocator> ProtBuf<T, A> {
     fn from_raw_parts(length: uint, ptr: *mut T) -> ProtBuf<T, A> {
         ProtBuf {
