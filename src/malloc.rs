@@ -1020,7 +1020,7 @@ impl fmt::Show for Dir {
         }
 
         if USE_STATS {
-            try!(write!(fmt, "\n{}", self.stats));
+            try!(write!(fmt, "\n{:?}", self.stats));
         }
 
         Ok(())
@@ -1429,7 +1429,7 @@ mod test {
 
 
     fn print_dir_state() {
-        info!("{}", super::thread_dir())
+        info!("{:?}", super::thread_dir())
     }
 
     fn write_byte(ptr: *mut u8, index: uint) {

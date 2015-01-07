@@ -322,7 +322,7 @@ mod test {
         let key = ProtKey::new(s1);
 
         assert_eq!(key.read().as_slice(), s2.as_slice());
-        assert_eq!(key.read()[], s2[]);
+        assert_eq!(&key.read()[], &s2[]);
         assert_eq!(*key.read(), s2);
 
         {
@@ -336,7 +336,7 @@ mod test {
             assert_eq!(r3, r2);
         }
 
-        key.read_with(|k| assert_eq!(k[], s2.as_slice()));
+        key.read_with(|k| assert_eq!(&k[], s2.as_slice()));
 
         assert!(key.try_write().is_some());
     }

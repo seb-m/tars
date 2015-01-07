@@ -10,7 +10,6 @@
        html_root_url = "http://doc.rust-lang.org/")]
 
 #![feature(unsafe_destructor)]
-#![feature(slicing_syntax)]
 
 #[cfg(test)] extern crate test;
 #[cfg(test)] #[macro_use] extern crate log;

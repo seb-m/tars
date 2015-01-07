@@ -4,10 +4,11 @@ use alloc::heap;
 use std::fmt;
 use std::intrinsics;
 use std::iter::{AdditiveIterator, FromIterator};
-use std::kinds::marker::NoSync;
+use std::marker;
 use std::mem;
 use std::num::{Int, FromPrimitive};
-use std::ops::{self, Deref, DerefMut, Index, IndexMut};
+use std::ops::{Deref, DerefMut, Index, IndexMut,
+               Range, RangeTo, RangeFrom, FullRange};
 use std::ptr;
 use std::rand::Rng;
 use std::raw::Slice;
@@ -77,7 +78,7 @@ unsafe fn dealloc<A: Allocator, T>(ptr: *mut T, count: uint) {
 pub struct ProtBuf<T, A = DefaultBufferAllocator> {
     len: uint,
     ptr: *mut T,
-    nosync: NoSync
+    nosync: marker::NoSync
 }
 
 // fixme
@@ -89,7 +90,7 @@ impl<T: Copy, A: Allocator> ProtBuf<T, A> {
         ProtBuf {
             len: length,
             ptr: ptr,
-            nosync: NoSync
+            nosync: marker::NoSync
         }
     }
 
@@ -310,40 +311,67 @@ impl<T: Copy, A: Allocator> IndexMut<uint> for ProtBuf<T, A> {
     }
 }
 
-impl<T: Copy, A: Allocator> ops::Slice<uint, [T]> for ProtBuf<T, A> {
-    fn as_slice_<'a>(&'a self) -> &'a [T] {
-        self.as_slice()
-    }
+impl<T: Copy, A: Allocator> Index<Range<uint>> for ProtBuf<T, A> {
+    type Output = [T];
 
-    fn slice_from_or_fail<'a>(&'a self, start: &uint) -> &'a [T] {
-        self.as_slice().slice_from_or_fail(start)
-    }
-
-    fn slice_to_or_fail<'a>(&'a self, end: &uint) -> &'a [T] {
-        self.as_slice().slice_to_or_fail(end)
-    }
-
-    fn slice_or_fail<'a>(&'a self, start: &uint, end: &uint) -> &'a [T] {
-        self.as_slice().slice_or_fail(start, end)
+    fn index(&self, index: &Range<uint>) -> &[T] {
+        self.as_slice().index(index)
     }
 }
 
-impl<T: Copy, A: Allocator> ops::SliceMut<uint, [T]> for ProtBuf<T, A> {
-    fn as_mut_slice_<'a>(&'a mut self) -> &'a mut [T] {
+impl<T: Copy, A: Allocator> Index<RangeTo<uint>> for ProtBuf<T, A> {
+    type Output = [T];
+
+    fn index(&self, index: &RangeTo<uint>) -> &[T] {
+        self.as_slice().index(index)
+    }
+}
+
+impl<T: Copy, A: Allocator> Index<RangeFrom<uint>> for ProtBuf<T, A> {
+    type Output = [T];
+
+    fn index(&self, index: &RangeFrom<uint>) -> &[T] {
+        self.as_slice().index(index)
+    }
+}
+
+impl<T: Copy, A: Allocator> Index<FullRange> for ProtBuf<T, A> {
+    type Output = [T];
+
+    fn index(&self, _index: &FullRange) -> &[T] {
+        self.as_slice()
+    }
+}
+
+impl<T: Copy, A: Allocator> IndexMut<Range<uint>> for ProtBuf<T, A> {
+    type Output = [T];
+
+    fn index_mut(&mut self, index: &Range<uint>) -> &mut [T] {
+        self.as_mut_slice().index_mut(index)
+    }
+}
+
+impl<T: Copy, A: Allocator> IndexMut<RangeTo<uint>> for ProtBuf<T, A> {
+    type Output = [T];
+
+    fn index_mut(&mut self, index: &RangeTo<uint>) -> &mut [T] {
+        self.as_mut_slice().index_mut(index)
+    }
+}
+
+impl<T: Copy, A: Allocator> IndexMut<RangeFrom<uint>> for ProtBuf<T, A> {
+    type Output = [T];
+
+    fn index_mut(&mut self, index: &RangeFrom<uint>) -> &mut [T] {
+        self.as_mut_slice().index_mut(index)
+    }
+}
+
+impl<T: Copy, A: Allocator> IndexMut<FullRange> for ProtBuf<T, A> {
+    type Output = [T];
+
+    fn index_mut(&mut self, _index: &FullRange) -> &mut [T] {
         self.as_mut_slice()
-    }
-
-    fn slice_from_or_fail_mut<'a>(&'a mut self, start: &uint) -> &'a mut [T] {
-        self.as_mut_slice().slice_from_or_fail_mut(start)
-    }
-
-    fn slice_to_or_fail_mut<'a>(&'a mut self, end: &uint) -> &'a mut [T] {
-        self.as_mut_slice().slice_to_or_fail_mut(end)
-    }
-
-    fn slice_or_fail_mut<'a>(&'a mut self, start: &uint,
-                             end: &uint) -> &'a mut [T] {
-        self.as_mut_slice().slice_or_fail_mut(start, end)
     }
 }
 
