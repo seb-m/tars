@@ -44,7 +44,7 @@
 use std::cell::RefCell;
 use std::cmp;
 use std::fmt;
-use std::hash;
+use std::hash::{self, SipHasher};
 use std::iter;
 use std::mem;
 use std::num::{Int, UnsignedInt, ToPrimitive};
@@ -524,7 +524,7 @@ impl Dir {
 
     #[inline]
     fn object_to_region_index(&self, object: *mut u8) -> uint {
-        hash::hash(&(mmap::mask_pointer(object) as uint)) as uint &
+        hash::hash::<_, SipHasher>(&(mmap::mask_pointer(object) as uint)) as uint &
             self.region_mask()
     }
 

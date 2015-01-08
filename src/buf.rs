@@ -53,7 +53,6 @@ unsafe fn dealloc<A: Allocator, T>(ptr: *mut T, count: uint) {
 /// elements. See `ProtKey` for more controlled access.
 ///
 /// ```rust
-/// # #![feature(default_type_params)]
 /// # extern crate tars;
 /// # use tars::allocator::{ProtectedBufferAllocator, ProtectedKeyAllocator};
 /// # use tars::{ProtKey, ProtBuf, ProtBuf8};

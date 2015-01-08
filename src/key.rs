@@ -29,7 +29,6 @@ const NOREAD: uint = 0;
 /// wrapped in `RefCell`.
 ///
 /// ```rust
-/// # #![feature(default_type_params)]
 /// # extern crate tars;
 /// # use tars::allocator::ProtectedKeyAllocator;
 /// # use tars::{ProtKey, ProtBuf, ProtKey8};
@@ -53,7 +52,7 @@ const NOREAD: uint = 0;
 /// }   // Relinquish its read-access
 ///
 /// // Alternative way to read its content
-/// key.read_with(|k| encrypt(k.as_slice(), b"abc"));
+/// key.read_with(|k| encrypt(&k[], b"abc"));
 ///
 /// // Access it in write-mode
 /// if let Some(mut key_write) = key.try_write() {
