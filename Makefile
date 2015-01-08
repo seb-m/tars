@@ -1,10 +1,3 @@
-
-# Test command for Travis
-test:
-	rustc src/lib.rs -O --test --cfg no_mlock
-	./tars
-	rm -f tars
-
 clean:
 	rm -rf doc/
 	rm -rf target/

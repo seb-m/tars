@@ -3,7 +3,7 @@ env:
     - secure: dtKO++RIcSJfrWGsfmyjN8eou5+UMqpuQXmyR1ZyswzYjN/W48ZSGwD05nXHOfoZ12pVy08/Ud8e08ZhHa3YPD6aoV3Zvm8rx+4rhQcJvHiQT4mwH5i5JGV2q9ah5trpxCmG3WkjVfnlNdibY8xf3EuFkr610OibaxDUZXVva3U=
 language: rust
 script:
-  - cargo build --verbose
+  - cargo test --verbose --features no_mlock
   - cargo doc --no-deps --verbose
   - mv target/doc doc
 after_script:
