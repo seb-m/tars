@@ -59,17 +59,17 @@ use utils;
 
 // Chunks
 // Minimal size of a slot in a chunk.
-const MIN_CHUNK_SIZE: uint = 16;
+const MIN_CHUNK_SIZE: usize = 16;
 // As the page size cannot be inferred at compile-time this value
 // is provided only for use in the Dir struct. It is expected to
 // be larger than the real value.
-const MAX_CHUNK_SHIFT: uint = 16;
+const MAX_CHUNK_SHIFT: usize = 16;
 // It will only be possible to map up to MAX_CHUNK_MAPPING * 8
 // slots in a chunk.
-const MAX_CHUNK_MAPPING: uint = 16;
+const MAX_CHUNK_MAPPING: usize = 16;
 
 // Initial number of regions, must be a power of two.
-const INITIAL_REGIONS: uint = 128;
+const INITIAL_REGIONS: usize = 128;
 
 // Junk bytes used to fill buffers after memory allocation and
 // before deallocation. Even if disabled, memory will be zeroed-out
@@ -80,39 +80,39 @@ const FREE_JUNK: u8 = 0xdf;
 
 // Cache empty chunks.
 const USE_CACHE: bool = true;
-const MAX_CACHE_SIZE: uint = 64;
+const MAX_CACHE_SIZE: usize = 64;
 
 // Assemble statistics.
 const USE_STATS: bool = false;
 
 
 #[inline]
-fn page_shift() -> uint {
+fn page_shift() -> usize {
     mmap::page_size().trailing_zeros()
 }
 
 #[inline]
-fn max_chunk_shift() -> uint {
+fn max_chunk_shift() -> usize {
     page_shift() - 1
 }
 
 #[inline]
-fn max_chunk_size() -> uint {
-    1u << max_chunk_shift()
+fn max_chunk_size() -> usize {
+    1us << max_chunk_shift()
 }
 
 #[inline]
-fn min_chunk_size() -> uint {
+fn min_chunk_size() -> usize {
     cmp::max(mmap::page_size() / (MAX_CHUNK_MAPPING << 3), MIN_CHUNK_SIZE)
 }
 
 #[inline]
-fn max_slot_index(chunk_size: uint) -> uint {
+fn max_slot_index(chunk_size: usize) -> usize {
     mmap::page_size() / chunk_size
 }
 
 #[inline]
-fn chunk_size(size: uint) -> uint {
+fn chunk_size(size: usize) -> usize {
     match size {
         0 => 0,
         sz if sz <= min_chunk_size() => min_chunk_size(),
@@ -122,7 +122,7 @@ fn chunk_size(size: uint) -> uint {
 }
 
 #[inline]
-fn chunk_index(chunk_size: uint) -> uint {
+fn chunk_index(chunk_size: usize) -> usize {
     match chunk_size {
         0 => 0,
         cs => {
@@ -180,7 +180,7 @@ unsafe fn dir_dealloc(ptr: *mut u8) {
     mmap::deallocate(ptr, mem::size_of::<Dir>(), Some(0));
 }
 
-unsafe fn regions_alloc(count: uint) -> *mut u8 {
+unsafe fn regions_alloc(count: usize) -> *mut u8 {
     let size = count.checked_mul(mem::size_of::<Region>()).unwrap();
     mmap::allocate(size,
                    mem::min_align_of::<Region>(),
@@ -189,7 +189,7 @@ unsafe fn regions_alloc(count: uint) -> *mut u8 {
                    RangePos::Start)
 }
 
-unsafe fn regions_dealloc(ptr: *mut u8, count: uint) {
+unsafe fn regions_dealloc(ptr: *mut u8, count: usize) {
     let size = count.checked_mul(mem::size_of::<Region>()).unwrap();
     mmap::deallocate(ptr, size, Some(0));
 }
@@ -202,12 +202,12 @@ pub struct ThreadDir {
 }
 
 impl ThreadDir {
-    pub unsafe fn alloc(&mut self, size: uint, zero_fill: bool,
+    pub unsafe fn alloc(&mut self, size: usize, zero_fill: bool,
                         force_large: bool) -> *mut u8 {
         self.dir.borrow_mut().alloc(size, zero_fill, force_large)
     }
 
-    pub unsafe fn realloc(&mut self, ptr: *mut u8, size: uint, zero_fill: bool,
+    pub unsafe fn realloc(&mut self, ptr: *mut u8, size: usize, zero_fill: bool,
                           force_large: bool) -> *mut u8 {
         self.dir.borrow_mut().realloc(ptr, size, zero_fill, force_large)
     }
@@ -292,19 +292,19 @@ pub fn thread_dir() -> ThreadDir {
 // Central pages directory.
 struct Dir {
     // Canary used for integrity checks.
-    canary1: uint,
+    canary1: usize,
     // Pointer to the current pool of allocated regions.
     regions: *mut Region,
     // Total number of regions allocated in the pool.
-    total: uint,
+    total: usize,
     // Number of unused regions.
-    free: uint,
+    free: usize,
     // Cache list.
     cache1: *mut u8,
     // Cache list's back pointer.
     cache2: *mut u8,
     // Current number of cached free chunks.
-    cache_len: uint,
+    cache_len: usize,
     // Pointers to chunks with free slots where index i represents chunks
     // with slots of size-class 2^i (except for i=0 used to handle allocations
     // of size 0 and also for the first indexes which might remain unused
@@ -314,7 +314,7 @@ struct Dir {
     // in chunks1.
     chunks2: [*mut u8; MAX_CHUNK_SHIFT],
     // Canary.
-    canary2: uint,
+    canary2: usize,
     // Statistics.
     stats: Stats
 }
@@ -323,26 +323,26 @@ struct Dir {
 // Aggregated Dir statistics.
 struct Stats {
     // Number of allocated Large objects.
-    larges: uint,
+    larges: usize,
     // Cumulated size of allocated Large objects.
-    larges_bytes: uint,
+    larges_bytes: usize,
     // Number of allocated Chunks.
-    chunks: uint,
+    chunks: usize,
     // Distribution of chunks in their respective size-classes.
-    chunks_classes: [uint; MAX_CHUNK_SHIFT],
+    chunks_classes: [usize; MAX_CHUNK_SHIFT],
     // Number of deallocated chunks.
-    chunks_dealloc: uint,
+    chunks_dealloc: usize,
     // Number of cached chunks.
-    cached: uint,
+    cached: usize,
     // Number of chunks reused from cache.
-    reused: uint,
+    reused: usize,
     // Number of allocated keys.
-    keys: uint,
+    keys: usize,
     // Number of modifications of memory protections for
     // read, write, none.
-    prot_reads: uint,
-    prot_writes: uint,
-    prot_nones: uint
+    prot_reads: usize,
+    prot_writes: usize,
+    prot_nones: usize
 }
 
 #[derive(Copy)]
@@ -366,10 +366,10 @@ struct Region {
     // and keys.
     object: *mut u8,
     // Canary used for integrity checks.
-    canary: uint,
+    canary: usize,
     // Size-class of the chunk or full size of the mapped memory object for
     // large objects.
-    size: uint,
+    size: usize,
     // Region type.
     kind: RegionType,
 
@@ -404,7 +404,7 @@ impl Dir {
 
         let dir = dir_alloc() as *mut Dir;
         (*dir).canary1 = utils::os_rng().gen();
-        (*dir).canary2 = (*dir).canary1 ^ dir as uint;
+        (*dir).canary2 = (*dir).canary1 ^ dir as usize;
         (*dir).total = INITIAL_REGIONS;
         (*dir).free = INITIAL_REGIONS;
         (*dir).regions = regions_alloc((*dir).total) as *mut Region;
@@ -424,7 +424,7 @@ impl Dir {
         if self.total != self.free {
             let canary_dir = self.canary2;
 
-            for i in range(0u, self.total) {
+            for i in range(0us, self.total) {
                 let region = self.region_at_index_mut(i);
 
                 // Do not do anything if region's integrity is broken.
@@ -442,15 +442,15 @@ impl Dir {
 
     #[inline]
     pub fn check_integrity(&self) -> bool {
-        self.canary2 == self.canary1 ^ (self as *const Dir as uint)
+        self.canary2 == self.canary1 ^ (self as *const Dir as usize)
     }
 
     #[inline]
-    fn regions_used(&self) -> uint {
+    fn regions_used(&self) -> usize {
         self.total.checked_sub(self.free).unwrap()
     }
 
-    unsafe fn regions_realloc(&mut self, count: uint) {
+    unsafe fn regions_realloc(&mut self, count: usize) {
         let prev_total = self.total;
         let prev_alloc = self.regions;
         let mut prev_regions = self.regions;
@@ -460,7 +460,7 @@ impl Dir {
         self.regions = regions_alloc(count) as *mut Region;
 
         // Move regions.
-        for _ in range(0u, prev_total) {
+        for _ in range(0us, prev_total) {
             if !(*prev_regions).is_free() {
                 let new_index = self.region_pick((*prev_regions).object);
                 let new_region = self.region_at_index_mut(new_index) as
@@ -502,7 +502,7 @@ impl Dir {
     }
 
     #[inline]
-    fn region_at_index(&self, index: uint) -> &Region {
+    fn region_at_index(&self, index: usize) -> &Region {
         assert!(index < self.total);
         unsafe {
             &*self.regions.offset(index.to_int().unwrap())
@@ -510,7 +510,7 @@ impl Dir {
     }
 
     #[inline]
-    fn region_at_index_mut(&mut self, index: uint) -> &mut Region {
+    fn region_at_index_mut(&mut self, index: usize) -> &mut Region {
         assert!(index < self.total);
         unsafe {
             &mut *self.regions.offset(index.to_int().unwrap())
@@ -518,17 +518,17 @@ impl Dir {
     }
 
     #[inline]
-    fn region_mask(&self) -> uint {
+    fn region_mask(&self) -> usize {
         self.total - 1
     }
 
     #[inline]
-    fn object_to_region_index(&self, object: *mut u8) -> uint {
-        hash::hash::<_, SipHasher>(&(mmap::mask_pointer(object) as uint)) as uint &
+    fn object_to_region_index(&self, object: *mut u8) -> usize {
+        hash::hash::<_, SipHasher>(&(mmap::mask_pointer(object) as usize)) as usize &
             self.region_mask()
     }
 
-    fn region_pick(&self, object: *mut u8) -> uint {
+    fn region_pick(&self, object: *mut u8) -> usize {
         // Algorithm L Knuth volume 3, 6.4.
         let mut index = self.object_to_region_index(object);
         loop {
@@ -540,8 +540,8 @@ impl Dir {
         index
     }
 
-    fn region_insert(&mut self, object: *mut u8, size: uint,
-                     chunk: bool) -> uint {
+    fn region_insert(&mut self, object: *mut u8, size: usize,
+                     chunk: bool) -> usize {
         // Grow regions if needed.
         self.regions_grow();
 
@@ -557,7 +557,7 @@ impl Dir {
         region_index
     }
 
-    fn region_find(&self, object: *mut u8) -> Option<uint> {
+    fn region_find(&self, object: *mut u8) -> Option<usize> {
         assert!(!object.is_null());
 
         let start = mmap::mask_pointer(object);
@@ -579,7 +579,7 @@ impl Dir {
         }
     }
 
-    fn region_delete(&mut self, index: uint) {
+    fn region_delete(&mut self, index: usize) {
         // Algorithm R Knuth volume 3, 6.4.
         self.free += 1;
         let mut i = index;
@@ -664,7 +664,7 @@ impl Dir {
         }
     }
 
-    unsafe fn free_chunk_insert(&mut self, region_index: uint) {
+    unsafe fn free_chunk_insert(&mut self, region_index: usize) {
         let dir: *mut Dir = mem::transmute(self);
 
         let region = (*dir).regions.offset(region_index.to_int().unwrap());
@@ -680,7 +680,7 @@ impl Dir {
                            &mut (*dir).chunks2[index], &mut *region);
     }
 
-    unsafe fn free_chunk_remove(&mut self, region_index: uint) {
+    unsafe fn free_chunk_remove(&mut self, region_index: usize) {
         let dir: *mut Dir = mem::transmute(self);
 
         let region = (*dir).regions.offset(region_index.to_int().unwrap());
@@ -701,7 +701,7 @@ impl Dir {
         USE_CACHE && self.cache_len > 0
     }
 
-    unsafe fn cache_chunk_insert(&mut self, region_index: uint) {
+    unsafe fn cache_chunk_insert(&mut self, region_index: usize) {
         let dir: *mut Dir = mem::transmute(self);
 
         let region = (*dir).regions.offset(region_index.to_int().unwrap());
@@ -714,10 +714,10 @@ impl Dir {
         (*region).set_as_cache();
     }
 
-    unsafe fn cache_chunk_take(&mut self, chunk_size: uint) -> (uint, *mut u8) {
+    unsafe fn cache_chunk_take(&mut self, chunk_size: usize) -> (usize, *mut u8) {
         let dir: *mut Dir = mem::transmute(self);
 
-        let chunk = if utils::rng().gen_range(0u, 2u) == 1 {
+        let chunk = if utils::rng().gen_range(0us, 2us) == 1 {
             (*dir).cache1
         } else {
             (*dir).cache2
@@ -738,11 +738,11 @@ impl Dir {
     }
 
     #[inline]
-    fn has_free_chunk(&self, chunk_size: uint) -> bool {
+    fn has_free_chunk(&self, chunk_size: usize) -> bool {
         !self.chunks1[chunk_index(chunk_size)].is_null()
     }
 
-    unsafe fn create_chunk(&mut self, chunk_size: uint) {
+    unsafe fn create_chunk(&mut self, chunk_size: usize) {
         let (region_index, chunk) = if self.has_cached_chunk() {
             stats_inc!(self.stats.reused);
             self.cache_chunk_take(chunk_size)
@@ -765,14 +765,14 @@ impl Dir {
         }
     }
 
-    unsafe fn take_chunk_slot(&mut self, chunk_size: uint, real_size: uint,
+    unsafe fn take_chunk_slot(&mut self, chunk_size: usize, real_size: usize,
                               zero_fill: bool) -> *mut u8 {
         debug_assert!(self.has_free_chunk(chunk_size) &&
                       chunk_size >= real_size);
 
         let index = chunk_index(chunk_size);
         // Either take the first chunk or the last one.
-        let chunk = if utils::rng().gen_range(0u, 2u) == 1 {
+        let chunk = if utils::rng().gen_range(0us, 2us) == 1 {
             self.chunks1[index]
         } else {
             self.chunks2[index]
@@ -800,7 +800,7 @@ impl Dir {
             self.free_chunk_remove(region_index);
         }
 
-        let slot = chunk.offset((slot_index * chunk_size) as int);
+        let slot = chunk.offset((slot_index * chunk_size) as isize);
 
         if let Some(fill_byte) = fill_byte_alloc(zero_fill) {
             ptr::set_memory(slot, fill_byte, chunk_size);
@@ -809,7 +809,7 @@ impl Dir {
         slot
     }
 
-    pub unsafe fn alloc(&mut self, size: uint, zero_fill: bool,
+    pub unsafe fn alloc(&mut self, size: usize, zero_fill: bool,
                         force_large: bool) -> *mut u8 {
         assert!(self.check_integrity());
 
@@ -841,7 +841,7 @@ impl Dir {
         }
     }
 
-    pub unsafe fn realloc(&mut self, ptr: *mut u8, size: uint, zero_fill: bool,
+    pub unsafe fn realloc(&mut self, ptr: *mut u8, size: usize, zero_fill: bool,
                           force_large: bool) -> *mut u8 {
         assert!(self.check_integrity());
 
@@ -868,7 +868,7 @@ impl Dir {
         nptr
     }
 
-    unsafe fn free_chunk_slot(&mut self, region_index: uint, offset: uint) {
+    unsafe fn free_chunk_slot(&mut self, region_index: usize, offset: usize) {
         let (chunk_was_full, chunk_is_empty) = {
             let region = self.region_at_index_mut(region_index);
             assert!(region.is_chunk() && region.size != 0);
@@ -912,8 +912,8 @@ impl Dir {
                     return;
                 }
 
-                let chunk_offset = (ptr as uint).checked_sub(
-                    region.object as uint).unwrap();
+                let chunk_offset = (ptr as usize).checked_sub(
+                    region.object as usize).unwrap();
 
                 // Free chunk slot.
                 self.free_chunk_slot(region_index, chunk_offset);
@@ -958,7 +958,7 @@ impl Dir {
         let region = self.region_at_index_mut(region_index);
 
         assert!(region.check_integrity(canary_dir));
-        assert_eq!(region.kind as uint, RegionType::Large as uint);
+        assert_eq!(region.kind as usize, RegionType::Large as usize);
 
         assert_eq!(region.object, ptr);
         mmap::protect(region.object, region.size, prot);
@@ -970,11 +970,11 @@ impl fmt::Show for Dir {
         try!(write!(fmt, "Current state:\n"));
 
         assert!(!self.regions.is_null());
-        let mut num_free = 0u;
-        let mut num_chunk = 0u;
-        let mut num_large = 0u;
-        let mut num_cache = 0u;
-        for i in range(0u, self.total) {
+        let mut num_free = 0us;
+        let mut num_chunk = 0us;
+        let mut num_large = 0us;
+        let mut num_cache = 0us;
+        for i in range(0us, self.total) {
             let region = self.region_at_index(i);
 
             match region.kind {
@@ -992,8 +992,8 @@ impl fmt::Show for Dir {
         try!(write!(fmt, "cached chunks: {}\n", num_cache));
 
         try!(write!(fmt, "chunks:\n"));
-        for i in iter::range_inclusive(0u, max_chunk_shift()) {
-            let size = 1u << i;
+        for i in iter::range_inclusive(0us, max_chunk_shift()) {
+            let size = 1us << i;
 
             if i != 0 && size < min_chunk_size() {
                 continue;
@@ -1002,7 +1002,7 @@ impl fmt::Show for Dir {
             if self.chunks1[i].is_null() {
                 try!(write!(fmt, "chunk size: {:<5} -> empty\n", size));
             } else {
-                let mut l: uint = 0;
+                let mut l: usize = 0;
                 let mut object: *mut u8 = self.chunks1[i];
                 loop {
                     l += 1;
@@ -1053,8 +1053,8 @@ impl fmt::Show for Stats {
         try!(write!(fmt, "larges_bytes: {}\n", self.larges_bytes));
         try!(write!(fmt, "chunks:       {}\n", self.chunks));
         try!(write!(fmt, "chunks sizes:\n"));
-        for i in iter::range_inclusive(0u, max_chunk_shift()) {
-            let size = 1u << i;
+        for i in iter::range_inclusive(0us, max_chunk_shift()) {
+            let size = 1us << i;
             if i != 0 && size < min_chunk_size() {
                 continue;
             }
@@ -1074,11 +1074,11 @@ impl fmt::Show for Stats {
 
 
 impl Region {
-    fn init(&mut self, object: *mut u8, size: uint, chunk: bool,
-            canary_dir: uint) {
+    fn init(&mut self, object: *mut u8, size: usize, chunk: bool,
+            canary_dir: usize) {
         assert!(!object.is_null());
         self.object = object;
-        self.canary = canary_dir ^ object as uint;
+        self.canary = canary_dir ^ object as usize;
         self.kind = if chunk {
             RegionType::Chunk
         } else {
@@ -1098,7 +1098,7 @@ impl Region {
 
         let max_index = max_slot_index(self.size);
 
-        for i in range(0u, max_index >> 3) {
+        for i in range(0us, max_index >> 3) {
             self.mapping[i] = 0xff;
         }
 
@@ -1106,7 +1106,7 @@ impl Region {
             self.mapping[max_index >> 3] = 0;
         }
 
-        for i in range(0u, max_index % 8) {
+        for i in range(0us, max_index % 8) {
             self.mapping[max_index >> 3] |= 1 << i;
         }
 
@@ -1115,12 +1115,12 @@ impl Region {
     }
 
     #[inline]
-    fn check_integrity(&self, canary_dir: uint) -> bool {
-        !self.is_free() && self.canary == canary_dir ^ self.object as uint
+    fn check_integrity(&self, canary_dir: usize) -> bool {
+        !self.is_free() && self.canary == canary_dir ^ self.object as usize
     }
 
     unsafe fn set_as_cache(&mut self) {
-        assert_eq!(self.kind as uint, RegionType::Chunk as uint);
+        assert_eq!(self.kind as usize, RegionType::Chunk as usize);
 
         self.kind = RegionType::Cache;
         self.size = 0;
@@ -1129,8 +1129,8 @@ impl Region {
         mmap::protect(self.object, mmap::page_size(), Prot::None);
     }
 
-    unsafe fn set_as_chunk(&mut self, chunk_size: uint) {
-        assert_eq!(self.kind as uint, RegionType::Cache as uint);
+    unsafe fn set_as_chunk(&mut self, chunk_size: usize) {
+        assert_eq!(self.kind as usize, RegionType::Cache as usize);
 
         self.kind = RegionType::Chunk;
         self.size = chunk_size;
@@ -1148,13 +1148,13 @@ impl Region {
     #[inline]
     fn is_free(&self) -> bool {
         debug_assert_eq!(self.object.is_null(),
-                         (self.kind as uint == RegionType::Free as uint));
-        self.kind as uint == RegionType::Free as uint
+                         (self.kind as usize == RegionType::Free as usize));
+        self.kind as usize == RegionType::Free as usize
     }
 
     #[inline]
     fn is_chunk(&self) -> bool {
-        self.kind as uint == RegionType::Chunk as uint
+        self.kind as usize == RegionType::Chunk as usize
     }
 
     fn chunk_state(&self, full: bool) -> bool {
@@ -1169,13 +1169,13 @@ impl Region {
 
         let max_slot_index = max_slot_index(self.size);
 
-        for i in range(0u, max_slot_index >> 3) {
+        for i in range(0us, max_slot_index >> 3) {
             if self.mapping[i] != byte_val {
                 return false;
             }
         }
 
-        for i in range(0u, max_slot_index % 8) {
+        for i in range(0us, max_slot_index % 8) {
             let expected_val = if full {
                 0
             } else {
@@ -1198,21 +1198,21 @@ impl Region {
     }
 
     #[inline]
-    fn chunk_slot_is_free(&self, index: uint) -> bool {
+    fn chunk_slot_is_free(&self, index: usize) -> bool {
         debug_assert!(index < max_slot_index(self.size));
         self.mapping[index >> 3] & (1 << (index % 8)) != 0
     }
 
-    fn take_chunk_slot(&mut self) -> uint {
+    fn take_chunk_slot(&mut self) -> usize {
         debug_assert!(self.is_chunk() && self.size != 0 &&
                       !self.is_full_chunk());
 
         let max_slot_index = max_slot_index(self.size);
         assert!(max_slot_index > 0);
-        let mut slot_index = utils::rng().gen_range(0u, max_slot_index);
+        let mut slot_index = utils::rng().gen_range(0us, max_slot_index);
 
         let mut found = false;
-        for _ in range(0u, max_slot_index) {
+        for _ in range(0us, max_slot_index) {
             if self.chunk_slot_is_free(slot_index) {
                 found = true;
                 break;
@@ -1227,7 +1227,7 @@ impl Region {
         slot_index
     }
 
-    unsafe fn free_chunk_slot(&mut self, offset: uint) {
+    unsafe fn free_chunk_slot(&mut self, offset: usize) {
         debug_assert!(self.is_chunk() && self.size != 0);
 
         assert!(offset < mmap::page_size() && offset % self.size == 0);
@@ -1240,7 +1240,7 @@ impl Region {
         // Mark slot as free.
         self.mapping[slot_index >> 3] |= 1 << (slot_index % 8);
 
-        utils::set_memory(self.object.offset(offset as int),
+        utils::set_memory(self.object.offset(offset as isize),
                           fill_byte_dealloc().unwrap(), self.size);
     }
 
@@ -1274,18 +1274,18 @@ impl fmt::Show for Region {
         }
 
         try!(write!(fmt, "Region: used, type: {}, size: {}\n",
-                    self.kind as uint, self.size));
+                    self.kind as usize, self.size));
 
         if self.is_chunk() && self.size != 0 {
             try!(write!(fmt, "mapping:"));
-            for i in range(0u, max_slot_index(self.size)) {
+            for i in range(0us, max_slot_index(self.size)) {
                 if i % 8 == 0 {
                     try!(write!(fmt, " "));
                 }
                 if i > 0 && i % 32 == 0  {
                     try!(write!(fmt, "\n         "));
                 }
-                try!(write!(fmt, "{}", self.chunk_slot_is_free(i) as uint));
+                try!(write!(fmt, "{}", self.chunk_slot_is_free(i) as usize));
             }
             try!(write!(fmt, "\n"));
         }
@@ -1295,7 +1295,7 @@ impl fmt::Show for Region {
 }
 
 
-fn align_to_size(align: uint, size: uint) -> Option<uint> {
+fn align_to_size(align: usize, size: usize) -> Option<usize> {
     match align {
         0 => Some(size),
         algn if !algn.is_power_of_two() || algn >= mmap::page_size() => None,
@@ -1304,7 +1304,7 @@ fn align_to_size(align: uint, size: uint) -> Option<uint> {
     }
 }
 
-unsafe fn xmalloc(size: uint, align: uint, zero_fill: bool,
+unsafe fn xmalloc(size: usize, align: usize, zero_fill: bool,
                   force_large: bool) -> *mut u8 {
     let sz = match align_to_size(align, size) {
         Some(sz) => sz,
@@ -1322,7 +1322,7 @@ unsafe fn xmalloc(size: uint, align: uint, zero_fill: bool,
 /// to be equal to zero if no specific alignment needs to be requested.
 /// This function returns `NULL` if `align` is invalid and otherwise
 /// `panic!` on error.
-pub unsafe fn malloc(size: uint, align: uint) -> *mut u8 {
+pub unsafe fn malloc(size: usize, align: usize) -> *mut u8 {
     xmalloc(size, align, false, false)
 }
 
@@ -1330,7 +1330,7 @@ pub unsafe fn malloc(size: uint, align: uint) -> *mut u8 {
 ///
 /// Provides the same interface than the usual `calloc` function, see
 /// `malloc` for this implementation's specifities.
-pub unsafe fn calloc(count: uint, size: uint, align: uint) -> *mut u8 {
+pub unsafe fn calloc(count: usize, size: usize, align: usize) -> *mut u8 {
     let full_sz = count.checked_mul(size).unwrap();
     xmalloc(full_sz, align, true, false)
 }
@@ -1341,12 +1341,12 @@ pub unsafe fn calloc(count: uint, size: uint, align: uint) -> *mut u8 {
 /// returned pointer can be used with `protect_read`, `protect_write`
 /// or `protect_none` to change memory protections on its allocated
 /// region.
-pub unsafe fn malloc_key(size: uint, align: uint) -> *mut u8 {
+pub unsafe fn malloc_key(size: usize, align: usize) -> *mut u8 {
     xmalloc(size, align, false, true)
 }
 
 
-unsafe fn xrealloc(ptr: *mut u8, size: uint, align: uint,
+unsafe fn xrealloc(ptr: *mut u8, size: usize, align: usize,
                    force_large: bool) -> *mut u8 {
     let sz = match align_to_size(align, size) {
         Some(sz) => sz,
@@ -1360,14 +1360,14 @@ unsafe fn xrealloc(ptr: *mut u8, size: uint, align: uint,
 ///
 /// Provides the same interface than the usual `realloc` function, see
 /// `malloc` for this implementation's specifities.
-pub unsafe fn realloc(ptr: *mut u8, size: uint, align: uint) -> *mut u8 {
+pub unsafe fn realloc(ptr: *mut u8, size: usize, align: usize) -> *mut u8 {
     xrealloc(ptr, size, align, false)
 }
 
 /// Reallocate memory and allow changes to memory protections
 ///
 /// Must only be called after memory allocation with `malloc_key`.
-pub unsafe fn realloc_key(ptr: *mut u8, size: uint, align: uint) -> *mut u8 {
+pub unsafe fn realloc_key(ptr: *mut u8, size: usize, align: usize) -> *mut u8 {
     xrealloc(ptr, size, align, true)
 }
 
@@ -1422,7 +1422,7 @@ mod test {
     use std::ptr;
     use std::rand::{thread_rng, Rng};
     use std::sync::Future;
-    use std::uint;
+    use std::usize;
     use test::Bencher;
 
     use mmap;
@@ -1432,13 +1432,13 @@ mod test {
         info!("{:?}", super::thread_dir())
     }
 
-    fn write_byte(ptr: *mut u8, index: uint) {
+    fn write_byte(ptr: *mut u8, index: usize) {
         unsafe {
             *ptr.offset(index.to_int().unwrap()) = (index % 256) as u8;
         }
     }
 
-    fn read_byte(ptr: *const u8, index: uint) {
+    fn read_byte(ptr: *const u8, index: usize) {
         unsafe {
             assert_eq!(*ptr.offset(index.to_int().unwrap()),
                        (index % 256) as u8);
@@ -1448,25 +1448,25 @@ mod test {
 
     #[test]
     fn test_malloc_chunks() {
-        const NA: uint = 2048;
+        const NA: usize = 2048;
         let mut p: [*mut u8; NA] = [ptr::null_mut(); NA];
-        let mut s: [uint; NA] = [0u; NA];
+        let mut s: [usize; NA] = [0us; NA];
 
-        for i in range(0u, NA) {
+        for i in range(0us, NA) {
             p[i] = unsafe {
-                let size = thread_rng().gen_range(0u, os::page_size() >> 1);
+                let size = thread_rng().gen_range(0us, os::page_size() >> 1);
                 s[i] = size;
                 super::malloc(size, 0)
             };
             assert!(!p[i].is_null());
 
-            for j in range(0u, s[i]) {
+            for j in range(0us, s[i]) {
                 write_byte(p[i], j);
             }
         }
 
-        for i in iter::range_step(0u, NA, 16) {
-            for j in range(0u, s[i]) {
+        for i in iter::range_step(0us, NA, 16) {
+            for j in range(0us, s[i]) {
                 read_byte(p[i] as *const u8, j);
             }
 
@@ -1475,21 +1475,21 @@ mod test {
             }
         }
 
-        for i in iter::range_step(0u, NA, 16) {
+        for i in iter::range_step(0us, NA, 16) {
             p[i] = unsafe {
-                let size = thread_rng().gen_range(0u, os::page_size() >> 1);
+                let size = thread_rng().gen_range(0us, os::page_size() >> 1);
                 s[i] = size;
                 super::malloc(size, 0)
             };
             assert!(!p[i].is_null());
 
-            for j in range(0u, s[i]) {
+            for j in range(0us, s[i]) {
                 write_byte(p[i], j);
             }
         }
 
-        for i in range(0u, NA) {
-            for j in range(0u, s[i]) {
+        for i in range(0us, NA) {
+            for j in range(0us, s[i]) {
                 read_byte(p[i] as *const u8, j);
             }
 
@@ -1505,11 +1505,11 @@ mod test {
 
     #[test]
     fn test_malloc_large() {
-        const NA: uint = 2048;
+        const NA: usize = 2048;
         let mut p: [*mut u8; NA] = [ptr::null_mut(); NA];
-        let mut s: [uint; NA] = [0u; NA];
+        let mut s: [usize; NA] = [0us; NA];
 
-        for i in range(0u, NA) {
+        for i in range(0us, NA) {
             p[i] = unsafe {
                 let size = thread_rng().gen_range((os::page_size() >> 1) + 1,
                                                   os::page_size() << 3);
@@ -1518,13 +1518,13 @@ mod test {
             };
             assert!(!p[i].is_null());
 
-            for j in range(0u, s[i]) {
+            for j in range(0us, s[i]) {
                 write_byte(p[i], j);
             }
         }
 
-        for i in range(0u, NA) {
-            for j in range(0u, s[i]) {
+        for i in range(0us, NA) {
+            for j in range(0us, s[i]) {
                 read_byte(p[i] as *const u8, j);
             }
 
@@ -1539,11 +1539,11 @@ mod test {
 
     #[test]
     fn test_malloc_keys() {
-        const NA: uint = 2048;
+        const NA: usize = 2048;
         let mut p: [*mut u8; NA] = [ptr::null_mut(); NA];
-        let mut s: [uint; NA] = [0u; NA];
+        let mut s: [usize; NA] = [0us; NA];
 
-        for i in range(0u, NA) {
+        for i in range(0us, NA) {
             p[i] = unsafe {
                 let size = thread_rng().gen_range(0, os::page_size() << 3);
                 s[i] = size;
@@ -1551,13 +1551,13 @@ mod test {
             };
             assert!(!p[i].is_null());
 
-            for j in range(0u, s[i]) {
+            for j in range(0us, s[i]) {
                 write_byte(p[i], j);
             }
         }
 
-        for i in range(0u, NA) {
-            for j in range(0u, s[i]) {
+        for i in range(0us, NA) {
+            for j in range(0us, s[i]) {
                 read_byte(p[i] as *const u8, j);
             }
 
@@ -1572,27 +1572,27 @@ mod test {
 
     #[test]
     fn test_malloc_mixed() {
-        const NA: uint = 8192;
+        const NA: usize = 8192;
         let mut p: [*mut u8; NA] = [ptr::null_mut(); NA];
-        let mut s: [uint; NA] = [0u; NA];
+        let mut s: [usize; NA] = [0us; NA];
 
-        for i in range(0u, NA) {
+        for i in range(0us, NA) {
             p[i] = unsafe {
-                let size = thread_rng().gen_range(0u, os::page_size() << 2);
+                let size = thread_rng().gen_range(0us, os::page_size() << 2);
                 s[i] = size;
                 super::malloc(size, 0)
             };
             assert!(!p[i].is_null());
 
-            for j in range(0u, s[i]) {
+            for j in range(0us, s[i]) {
                 write_byte(p[i], j);
             }
         }
 
         print_dir_state();
 
-        for i in iter::range_step(0u, NA, 16) {
-            for j in range(0u, s[i]) {
+        for i in iter::range_step(0us, NA, 16) {
+            for j in range(0us, s[i]) {
                 read_byte(p[i] as *const u8, j);
             }
 
@@ -1603,23 +1603,23 @@ mod test {
 
         print_dir_state();
 
-        for i in iter::range_step(0u, NA, 16) {
+        for i in iter::range_step(0us, NA, 16) {
             p[i] = unsafe {
-                let size = thread_rng().gen_range(0u, os::page_size() << 4);
+                let size = thread_rng().gen_range(0us, os::page_size() << 4);
                 s[i] = size;
                 super::malloc(size, 0)
             };
             assert!(!p[i].is_null());
 
-            for j in range(0u, s[i]) {
+            for j in range(0us, s[i]) {
                 write_byte(p[i], j);
             }
         }
 
         print_dir_state();
 
-        for i in range(0u, NA) {
-            for j in range(0u, s[i]) {
+        for i in range(0us, NA) {
+            for j in range(0us, s[i]) {
                 read_byte(p[i] as *const u8, j);
             }
 
@@ -1643,7 +1643,7 @@ mod test {
         let mut size;
 
         while align < os::page_size() {
-            size = thread_rng().gen_range(0u, os::page_size() << 2);
+            size = thread_rng().gen_range(0us, os::page_size() << 2);
 
             sptr = unsafe {
                 super::malloc(size, align)
@@ -1652,14 +1652,14 @@ mod test {
                 super::malloc_key(size, align)
             };
             assert!(!sptr.is_null() && !kptr.is_null());
-            assert!(sptr as uint % align == 0 && kptr as uint % align == 0);
+            assert!(sptr as usize % align == 0 && kptr as usize % align == 0);
 
-            for i in range(0u, size) {
+            for i in range(0us, size) {
                 write_byte(sptr, i);
                 write_byte(kptr, i);
             }
 
-            for i in range(0u, size) {
+            for i in range(0us, size) {
                 read_byte(sptr as *const u8, i);
                 read_byte(kptr as *const u8, i);
             }
@@ -1801,8 +1801,8 @@ mod test {
 
     #[test]
     fn test_realloc() {
-        let size1 = thread_rng().gen_range(0u, os::page_size() << 2);
-        let size2 = thread_rng().gen_range(0u, os::page_size() << 2);
+        let size1 = thread_rng().gen_range(0us, os::page_size() << 2);
+        let size2 = thread_rng().gen_range(0us, os::page_size() << 2);
 
         unsafe {
             let mut p1 = super::malloc(size1, 0);
@@ -1810,7 +1810,7 @@ mod test {
             assert!(!p1.is_null());
             assert!(!p2.is_null());
 
-            for i in range(0u, size1) {
+            for i in range(0us, size1) {
                 write_byte(p1, i);
                 write_byte(p2, i);
             }
@@ -1820,7 +1820,7 @@ mod test {
             assert!(!p1.is_null());
             assert!(!p2.is_null());
 
-            for i in range(0u, cmp::min(size1, size2)) {
+            for i in range(0us, cmp::min(size1, size2)) {
                 read_byte(p1 as *const u8, i);
                 read_byte(p2 as *const u8, i);
             }
@@ -1831,7 +1831,7 @@ mod test {
                     write_byte(p2, i);
                 }
 
-                for i in range(0u, size2) {
+                for i in range(0us, size2) {
                     read_byte(p1 as *const u8, i);
                     read_byte(p2 as *const u8, i);
                 }
@@ -1844,13 +1844,13 @@ mod test {
 
     #[test]
     fn test_realloc_zero() {
-        let size = thread_rng().gen_range(0u, os::page_size() << 2);
+        let size = thread_rng().gen_range(0us, os::page_size() << 2);
 
         unsafe {
             let mut p1 = super::malloc(size, 0);
             assert!(!p1.is_null());
 
-            for i in range(0u, size) {
+            for i in range(0us, size) {
                 write_byte(p1, i);
             }
 
@@ -1874,8 +1874,8 @@ mod test {
             let mut p = super::calloc(1, os::page_size(), 0);
             assert!(!p.is_null());
 
-            for i in range(0u, os::page_size()) {
-                assert_eq!(*p.offset(i as int), 0);
+            for i in range(0us, os::page_size()) {
+                assert_eq!(*p.offset(i as isize), 0);
             }
             super::free(p);
 
@@ -1883,8 +1883,8 @@ mod test {
             p = super::calloc(1, 42, 0);
             assert!(!p.is_null());
 
-            for i in range(0u, 42) {
-                assert_eq!(*p.offset(i as int), 0);
+            for i in range(0us, 42) {
+                assert_eq!(*p.offset(i as isize), 0);
             }
             super::free(p);
         }
@@ -1894,7 +1894,7 @@ mod test {
     #[should_fail(message = "integer overflow")]
     fn test_calloc_overflow() {
         unsafe {
-            super::calloc(uint::MAX, 2, 0);
+            super::calloc(usize::MAX, 2, 0);
         }
     }
 
@@ -1903,11 +1903,11 @@ mod test {
         let size = 10;
 
         let mut futures: Vec<_> =
-            range(0u, size).map(|_| Future::spawn(move || {
-                super::thread_dir().dir.borrow().dir as uint
+            range(0us, size).map(|_| Future::spawn(move || {
+                super::thread_dir().dir.borrow().dir as usize
             })).collect();
 
-        let addrs: HashSet<uint> =
+        let addrs: HashSet<usize> =
             futures.iter_mut().map(|ref mut ft| ft.get()).collect();
 
         assert_eq!(addrs.len(), size);

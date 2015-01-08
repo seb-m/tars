@@ -25,12 +25,12 @@ const USE_MLOCK: bool = false;
 #[cfg(not(feature = "no_mlock"))]
 const USE_MLOCK: bool = true;
 
-pub const MIN_ALIGN: uint = 16;
+pub const MIN_ALIGN: usize = 16;
 
 
-pub fn page_size() -> uint {
+pub fn page_size() -> usize {
     static ONCE: Once = ONCE_INIT;
-    static mut pagesize: uint = 0;
+    static mut pagesize: usize = 0;
 
     unsafe {
         ONCE.call_once(|| {
@@ -42,17 +42,17 @@ pub fn page_size() -> uint {
 }
 
 #[inline]
-pub fn page_mask() -> uint {
+pub fn page_mask() -> usize {
     page_size() - 1
 }
 
 #[inline]
 pub fn mask_pointer<T>(ptr: *mut T) -> *mut T {
-    (ptr as uint & !page_mask()) as *mut T
+    (ptr as usize & !page_mask()) as *mut T
 }
 
 #[inline]
-fn page_round(size: uint) -> uint {
+fn page_round(size: usize) -> usize {
     size.checked_add(page_mask()).unwrap() & !page_mask()
 }
 
@@ -101,7 +101,7 @@ impl Prot {
 /// value. `prot` set the initial pages protections. `pos` hints how the
 /// buffer should be positionned inside the allocated region. This function
 /// `panic!` on error, only valid non-null pointers are returned.
-pub unsafe fn allocate(size: uint, align: uint, fill: Option<u8>,
+pub unsafe fn allocate(size: usize, align: usize, fill: Option<u8>,
                        prot: Prot, pos: RangePos) -> *mut u8 {
     let region_sz = page_round(size);
     let full_sz = region_sz.checked_add((2 * page_size())).unwrap();
@@ -132,7 +132,7 @@ pub unsafe fn allocate(size: uint, align: uint, fill: Option<u8>,
                             0);
     if object == MAP_FAILED {
         let errno = os::errno();
-        panic!("mmap failed: {} ({})", os::error_string(errno as uint), errno);
+        panic!("mmap failed: {} ({})", os::error_string(errno as usize), errno);
     }
 
     // Use first and last pages as guarded pages.
@@ -140,7 +140,7 @@ pub unsafe fn allocate(size: uint, align: uint, fill: Option<u8>,
     if rv != 0 {
         let errno = os::errno();
         panic!("mprotect failed: {} ({})",
-               os::error_string(errno as uint), errno);
+               os::error_string(errno as usize), errno);
     }
 
     let start = object as *mut u8;
@@ -152,10 +152,10 @@ pub unsafe fn allocate(size: uint, align: uint, fill: Option<u8>,
     if rv != 0 {
         let errno = os::errno();
         panic!("mprotect failed: {} ({})",
-               os::error_string(errno as uint), errno);
+               os::error_string(errno as usize), errno);
     }
 
-    let mut region = start.offset(page_size() as int);
+    let mut region = start.offset(page_size() as isize);
 
     // mlock
     if USE_MLOCK {
@@ -164,7 +164,7 @@ pub unsafe fn allocate(size: uint, align: uint, fill: Option<u8>,
         if rv != 0 {
             let errno = os::errno();
             panic!("mlock failed: {} ({})",
-                   os::error_string(errno as uint), errno);
+                   os::error_string(errno as usize), errno);
         }
     }
 
@@ -176,20 +176,20 @@ pub unsafe fn allocate(size: uint, align: uint, fill: Option<u8>,
         _ if size == region_sz => (),
         RangePos::End => {
             let offset = (region_sz - size) & !(align_sz - 1);
-            region = region.offset(offset as int);
+            region = region.offset(offset as isize);
         },
         RangePos::Rand => {
             let r = (region_sz - size).checked_div(
                 align_sz).unwrap().to_int().unwrap();
             let offset = utils::gen_range(&mut utils::rng(), 0, r) *
-                align_sz as int;
+                align_sz as isize;
             region = region.offset(offset);
         },
         _ => ()
     }
 
     if let Some(fill_byte) = fill {
-        ptr::set_memory(start.offset(page_size() as int), fill_byte, region_sz);
+        ptr::set_memory(start.offset(page_size() as isize), fill_byte, region_sz);
     }
 
     region
@@ -202,7 +202,7 @@ pub unsafe fn allocate(size: uint, align: uint, fill: Option<u8>,
 /// a specified byte value before deallocation. This function returns
 /// immediately without any effect if `ptr` is `NULL` and `panic!` on
 /// error.
-pub unsafe fn deallocate(ptr: *mut u8, size: uint, fill: Option<u8>) {
+pub unsafe fn deallocate(ptr: *mut u8, size: usize, fill: Option<u8>) {
     if ptr.is_null() {
         return;
     }
@@ -227,16 +227,16 @@ pub unsafe fn deallocate(ptr: *mut u8, size: uint, fill: Option<u8>) {
         if rv != 0 {
             let errno = os::errno();
             panic!("munlock failed: {} ({})",
-                   os::error_string(errno as uint), errno);
+                   os::error_string(errno as usize), errno);
         }
     }
 
-    let start = region.offset(-(page_size() as int));
+    let start = region.offset(-(page_size() as isize));
     let rv = mman::munmap(start as *mut c_void, full_sz as size_t);
     if rv != 0 {
         let errno = os::errno();
         panic!("munmap failed: {} ({})",
-               os::error_string(errno as uint), errno);
+               os::error_string(errno as usize), errno);
     }
 }
 
@@ -245,7 +245,7 @@ pub unsafe fn deallocate(ptr: *mut u8, size: uint, fill: Option<u8>) {
 /// `ptr` must be a pointer returned by `allocate` where `size` was
 /// used as argument. This function returns immediately if `ptr` is
 /// `NULL` and `panic!` on error.
-pub unsafe fn protect(ptr: *mut u8, size: uint, prot: Prot) {
+pub unsafe fn protect(ptr: *mut u8, size: usize, prot: Prot) {
     if ptr.is_null() {
         return;
     }
@@ -256,7 +256,7 @@ pub unsafe fn protect(ptr: *mut u8, size: uint, prot: Prot) {
     if rv != 0 {
         let errno = os::errno();
         panic!("mprotect failed: {} ({})",
-               os::error_string(errno as uint), errno);
+               os::error_string(errno as usize), errno);
     }
 }
 
@@ -290,7 +290,7 @@ mod adv_imp {
     use std::os;
 
 
-    pub unsafe fn madvise(ptr: *mut u8, size: uint) {
+    pub unsafe fn madvise(ptr: *mut u8, size: usize) {
         let dont_dump: c_int = 16;
         let rv = bsd44::madvise(ptr as *mut c_void, size as size_t,
                                 dont_dump | MADV_DONTFORK);
@@ -301,9 +301,9 @@ mod adv_imp {
             // old kernels respectively Linux < 3.4 and Linux < 2.6.16.
             // There should be a better way to check for the availability
             // of this flag in the kernel and in the libc.
-            if errno != EINVAL as uint {
+            if errno != EINVAL as usize {
                 panic!("madvise failed: {} ({})",
-                       os::error_string(errno as uint), errno);
+                       os::error_string(errno as usize), errno);
             }
         }
     }
@@ -318,13 +318,13 @@ mod adv_imp {
     use std::os;
 
 
-    pub unsafe fn madvise(ptr: *mut u8, size: uint) {
+    pub unsafe fn madvise(ptr: *mut u8, size: usize) {
         let rv = bsd44::madvise(ptr as *mut c_void, size as size_t,
                                 MADV_ZERO_WIRED_PAGES);
         if rv != 0 {
             let errno = os::errno();
             panic!("madvise failed: {} ({})",
-                   os::error_string(errno as uint), errno);
+                   os::error_string(errno as usize), errno);
         }
     }
 }
@@ -332,7 +332,7 @@ mod adv_imp {
 #[cfg(not(any(target_os = "linux", target_os = "android",
               target_os = "macos", target_os = "ios")))]
 mod adv_imp {
-    pub unsafe fn madvise(_: *mut u8, _: uint) {
+    pub unsafe fn madvise(_: *mut u8, _: usize) {
     }
 }
 
@@ -351,7 +351,7 @@ mod inh_imp {
         }
     }
 
-    pub unsafe fn minherit(ptr: *mut u8, size: uint) {
+    pub unsafe fn minherit(ptr: *mut u8, size: usize) {
         // Value named INHERIT_NONE on freebsd and VM_INHERIT_NONE on
         // macos/ios.
         let inherit_none: c_int = 2;
@@ -360,7 +360,7 @@ mod inh_imp {
         if rv != 0 {
             let errno = os::errno();
             panic!("minherit failed: {} ({})",
-                   os::error_string(errno as uint), errno);
+                   os::error_string(errno as usize), errno);
         }
     }
 }
@@ -368,6 +368,6 @@ mod inh_imp {
 #[cfg(not(any(target_os = "macos", target_os = "ios",
               target_os = "freebsd")))]
 mod inh_imp {
-    pub unsafe fn minherit(_: *mut u8, _: uint) {
+    pub unsafe fn minherit(_: *mut u8, _: usize) {
     }
 }

@@ -8,14 +8,14 @@ use std::rand::os::OsRng;
 
 
 #[allow(dead_code)]
-pub unsafe fn zero_memory(ptr: *mut u8, size: uint) {
+pub unsafe fn zero_memory(ptr: *mut u8, size: usize) {
     intrinsics::volatile_set_memory(ptr, 0, size);
 }
 
 // Use llvm intrinsic to avoid being optmized-out, I don't know
 // how effective it is. Maybe it would be worth calling `memset_s`
 // on platforms where it is available.
-pub unsafe fn set_memory(ptr: *mut u8, byte: u8, size: uint) {
+pub unsafe fn set_memory(ptr: *mut u8, byte: u8, size: usize) {
     intrinsics::volatile_set_memory(ptr, byte, size);
 }
 
@@ -43,7 +43,7 @@ pub fn bytes_eq<T>(x: &[T], y: &[T]) -> bool {
 
     let mut d: u8 = 0;
     unsafe {
-        for _ in range(0u, size) {
+        for _ in range(0us, size) {
             d |= *px ^ *py;
             px = px.offset(1);
             py = py.offset(1);
@@ -87,7 +87,7 @@ mod tests {
 
     #[test]
     fn test_byte_eq() {
-        for _ in range(0u, 256) {
+        for _ in range(0us, 256) {
             let a: u8 = random();
             let b: u8 = random();
             assert_eq!(super::byte_eq(a, b) == 1, a == b);
@@ -100,10 +100,10 @@ mod tests {
         let b: [u8; 64] = [0u8; 64];
         assert!(super::bytes_eq(&a, &b));
 
-        for _ in range(0u, 256) {
-            let va: Vec<u8> = range(0u, 64).map(|_| random::<u8>()).collect();
+        for _ in range(0us, 256) {
+            let va: Vec<u8> = range(0us, 64).map(|_| random::<u8>()).collect();
             let a = va.container_as_bytes();
-            let vb: Vec<u8> = range(0u, 64).map(|_| random::<u8>()).collect();
+            let vb: Vec<u8> = range(0us, 64).map(|_| random::<u8>()).collect();
             let b = vb.container_as_bytes();
             assert_eq!(super::bytes_eq(a, b), a == b);
         }

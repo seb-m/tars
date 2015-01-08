@@ -14,7 +14,7 @@ use buf::ProtBuf;
 pub type ProtKey8<A = DefaultKeyAllocator> = ProtKey<u8, A>;
 
 
-const NOREAD: uint = 0;
+const NOREAD: usize = 0;
 
 
 /// A protected key
@@ -29,6 +29,7 @@ const NOREAD: uint = 0;
 /// wrapped in `RefCell`.
 ///
 /// ```rust
+/// #![allow(unstable)]
 /// # extern crate tars;
 /// # use tars::allocator::ProtectedKeyAllocator;
 /// # use tars::{ProtKey, ProtBuf, ProtKey8};
@@ -62,7 +63,7 @@ const NOREAD: uint = 0;
 /// ```
 pub struct ProtKey<T, A = DefaultKeyAllocator> {
     key: RefCell<ProtBuf<T, A>>,
-    read_ctr: Rc<Cell<uint>>
+    read_ctr: Rc<Cell<usize>>
 }
 
 impl<T: Copy, A: KeyAllocator> ProtKey<T, A> {
@@ -186,12 +187,12 @@ impl<T: fmt::Show + Copy, A: KeyAllocator> fmt::Show for ProtKey<T, A> {
 /// will be revoked when this instance is destructed.
 pub struct ProtKeyRead<'a, T: 'a, A> {
     ref_key: Ref<'a, ProtBuf<T, A>>,
-    read_ctr: Rc<Cell<uint>>
+    read_ctr: Rc<Cell<usize>>
 }
 
 impl<'a, T: Copy, A: KeyAllocator> ProtKeyRead<'a, T, A> {
     fn new(ref_key: Ref<'a, ProtBuf<T, A>>,
-           read_ctr: Rc<Cell<uint>>) -> ProtKeyRead<'a, T, A> {
+           read_ctr: Rc<Cell<usize>>) -> ProtKeyRead<'a, T, A> {
         if read_ctr.get() == NOREAD {
             unsafe {
                 KeyAllocator::protect_read(None::<A>,
@@ -357,7 +358,7 @@ mod test {
             assert!(key.try_read().is_none());
         }
 
-        let mut c = 0u;
+        let mut c = 0us;
         key.write_with(|k| {k[42] = 42; c = 1;});
         assert_eq!(c, 1);
 
