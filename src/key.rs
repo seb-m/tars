@@ -142,7 +142,8 @@ impl<T: Copy, A: KeyAllocator> ProtKey<T, A> {
     /// Access the key in write mode and pass a reference to closure `f`.
     /// The key can only be writtent during this call. This method will
     /// `panic!` if a write access cannot be acquired on this key.
-    pub fn write_with<F>(&self, mut f: F) where F: FnMut(&mut ProtKeyWrite<T, A>) {
+    pub fn write_with<F>(&self, mut f: F)
+        where F: FnMut(&mut ProtKeyWrite<T, A>) {
         f(&mut self.write())
     }
 }
@@ -249,7 +250,8 @@ impl<'a, T: Copy, A: KeyAllocator> PartialEq for ProtKeyRead<'a, T, A> {
     }
 }
 
-impl<'a, T: fmt::Show + Copy, A: KeyAllocator> fmt::Show for ProtKeyRead<'a, T, A> {
+impl<'a, T, A: KeyAllocator> fmt::Show for ProtKeyRead<'a, T, A>
+    where T: fmt::Show + Copy {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         self.ref_key.fmt(f)
     }

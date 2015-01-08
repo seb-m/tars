@@ -524,8 +524,8 @@ impl Dir {
 
     #[inline]
     fn object_to_region_index(&self, object: *mut u8) -> usize {
-        hash::hash::<_, SipHasher>(&(mmap::mask_pointer(object) as usize)) as usize &
-            self.region_mask()
+        hash::hash::<_, SipHasher>(&(mmap::mask_pointer(object) as usize))
+            as usize & self.region_mask()
     }
 
     fn region_pick(&self, object: *mut u8) -> usize {
@@ -714,7 +714,8 @@ impl Dir {
         (*region).set_as_cache();
     }
 
-    unsafe fn cache_chunk_take(&mut self, chunk_size: usize) -> (usize, *mut u8) {
+    unsafe fn cache_chunk_take(&mut self,
+                               chunk_size: usize) -> (usize, *mut u8) {
         let dir: *mut Dir = mem::transmute(self);
 
         let chunk = if utils::rng().gen_range(0us, 2us) == 1 {
