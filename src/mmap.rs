@@ -20,6 +20,9 @@ use utils;
 /// Set `false` to this constant or pass `--cfg feature="no_mlock"` to
 /// `rustc` or use `cargo build --features no_mlock` with cargo to disable
 /// `mlock` calls (it might be needed in virtual environments).
+#[cfg(feature = "no_mlock")]
+const USE_MLOCK: bool = false;
+#[cfg(not(feature = "no_mlock"))]
 const USE_MLOCK: bool = true;
 
 pub const MIN_ALIGN: uint = 16;
@@ -155,7 +158,7 @@ pub unsafe fn allocate(size: uint, align: uint, fill: Option<u8>,
     let mut region = start.offset(page_size() as int);
 
     // mlock
-    if USE_MLOCK && cfg!(not(feature = "no_mlock")) {
+    if USE_MLOCK {
         // Do not lock guarded pages.
         rv = mman::mlock(region as *const c_void, region_sz as size_t);
         if rv != 0 {
@@ -219,7 +222,7 @@ pub unsafe fn deallocate(ptr: *mut u8, size: uint, fill: Option<u8>) {
     }
 
     // munlock
-    if USE_MLOCK && cfg!(not(feature = "no_mlock")) {
+    if USE_MLOCK {
         let rv = mman::munlock(region as *const c_void, region_sz as size_t);
         if rv != 0 {
             let errno = os::errno();
