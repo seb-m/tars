@@ -82,7 +82,12 @@ const FREE_JUNK: u8 = 0xdf;
 const USE_CACHE: bool = true;
 const MAX_CACHE_SIZE: usize = 64;
 
-// Assemble statistics.
+// Set `true` to this constant or pass `--cfg feature="malloc_stats"`
+// to `rustc` or use `cargo build --features malloc_stats` with cargo
+// to enable assembling statistics.
+#[cfg(feature = "malloc_stats")]
+const USE_STATS: bool = true;
+#[cfg(not(feature = "malloc_stats"))]
 const USE_STATS: bool = false;
 
 
@@ -149,23 +154,6 @@ fn fill_byte_dealloc() -> Option<u8> {
         Some(0)
     }
 }
-
-
-macro_rules! stats_inc(
-    ($attr:expr) => (
-        if USE_STATS {
-            $attr += 1;
-        }
-    )
-);
-
-macro_rules! stats_inc_by(
-    ($attr:expr, $val:expr) => (
-        if USE_STATS {
-            $attr += $val;
-        }
-    )
-);
 
 
 unsafe fn dir_alloc() -> *mut u8 {
@@ -316,7 +304,7 @@ struct Dir {
     // Canary.
     canary2: usize,
     // Statistics.
-    stats: Stats
+    stats: Option<Stats>
 }
 
 
@@ -408,7 +396,11 @@ impl Dir {
         (*dir).total = INITIAL_REGIONS;
         (*dir).free = INITIAL_REGIONS;
         (*dir).regions = regions_alloc((*dir).total) as *mut Region;
-        (*dir).stats = Stats::new();
+        if USE_STATS {
+            (*dir).stats = Some(Stats::new());
+        } else {
+            (*dir).stats = None;
+        }
 
         dir
     }
@@ -745,7 +737,9 @@ impl Dir {
 
     unsafe fn create_chunk(&mut self, chunk_size: usize) {
         let (region_index, chunk) = if self.has_cached_chunk() {
-            stats_inc!(self.stats.reused);
+            if USE_STATS {
+                self.stats.as_mut().unwrap().reused += 1;
+            }
             self.cache_chunk_take(chunk_size)
         } else {
             let chunk = mmap::allocate(mmap::page_size(),
@@ -784,7 +778,9 @@ impl Dir {
             return chunk;
         }
 
-        stats_inc!(self.stats.chunks_classes[index]);
+        if USE_STATS {
+            self.stats.as_mut().unwrap().chunks_classes[index] += 1;
+        }
 
         let region_index = self.region_find(chunk).unwrap();
 
@@ -815,11 +811,15 @@ impl Dir {
         assert!(self.check_integrity());
 
         if force_large || size > max_chunk_size() {
-            stats_inc!(self.stats.larges);
-            stats_inc_by!(self.stats.larges_bytes, size);
+            if USE_STATS {
+                self.stats.as_mut().unwrap().larges += 1;
+                self.stats.as_mut().unwrap().larges_bytes += size;
+            }
 
             let (prot, pos) = if force_large {
-                stats_inc!(self.stats.keys);
+                if USE_STATS {
+                    self.stats.as_mut().unwrap().keys += 1;
+                }
                 (Prot::Write, RangePos::End)
             } else {
                 (Prot::ReadWrite, RangePos::Start)
@@ -830,7 +830,9 @@ impl Dir {
             self.region_insert(object, size, false);
             object as *mut u8
         } else {
-            stats_inc!(self.stats.chunks);
+            if USE_STATS {
+                self.stats.as_mut().unwrap().chunks += 1;
+            }
 
             let chunk_size = chunk_size(size);
 
@@ -906,7 +908,9 @@ impl Dir {
 
         match region.kind {
             RegionType::Chunk => {
-                stats_inc!(self.stats.chunks_dealloc);
+                if USE_STATS {
+                    self.stats.as_mut().unwrap().chunks_dealloc += 1;
+                }
 
                 // Kind of static chunk, never deallocated.
                 if region.size == 0 {
@@ -923,7 +927,9 @@ impl Dir {
                     if self.can_cache_chunk() {
                         // Cache region and its chunk object.
                         self.cache_chunk_insert(region_index);
-                        stats_inc!(self.stats.cached);
+                        if USE_STATS {
+                            self.stats.as_mut().unwrap().cached += 1;
+                        }
                     } else {
                         // Delete object and regions's metadata.
                         region.dealloc_data(false);
@@ -947,12 +953,15 @@ impl Dir {
 
         assert!(self.check_integrity());
 
-        match prot {
-            Prot::Read => stats_inc!(self.stats.prot_reads),
-            Prot::Write => stats_inc!(self.stats.prot_writes),
-            Prot::None => stats_inc!(self.stats.prot_nones),
-            _ => ()
+        if USE_STATS {
+            match prot {
+                Prot::Read => self.stats.as_mut().unwrap().prot_reads += 1,
+                Prot::Write => self.stats.as_mut().unwrap().prot_writes +=1,
+                Prot::None => self.stats.as_mut().unwrap().prot_nones += 1,
+                _ => ()
+            }
         }
+
 
         let canary_dir = self.canary2;
         let region_index = self.region_find(ptr).unwrap();
@@ -1021,7 +1030,7 @@ impl fmt::Show for Dir {
         }
 
         if USE_STATS {
-            try!(write!(fmt, "\n{:?}", self.stats));
+            try!(write!(fmt, "\n{:?}", self.stats.as_ref().unwrap()));
         }
 
         Ok(())

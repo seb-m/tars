@@ -11,3 +11,4 @@ name = "tars"
 
 [features]
 no_mlock = []
+malloc_stats = []
