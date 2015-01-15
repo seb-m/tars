@@ -3,7 +3,7 @@
 use alloc::heap;
 use std::fmt;
 use std::intrinsics;
-use std::iter::{AdditiveIterator, FromIterator};
+use std::iter::AdditiveIterator;
 use std::marker;
 use std::mem;
 use std::num::{Int, FromPrimitive};
@@ -244,17 +244,6 @@ impl<T: Copy, A: KeyAllocator> ProtBuf<T, A> {
     /// Transform `self` into a protected key `ProtKey`.
     pub fn into_key(self) -> ProtKey<T, A> {
         ProtKey::new(self)
-    }
-}
-
-impl<T: Copy, A: Allocator> FromIterator<T> for ProtBuf<T, A> {
-    fn from_iter<I>(iterator: I) -> ProtBuf<T, A>
-      where I: ExactSizeIterator + Iterator<Item=T> {
-        let mut n = ProtBuf::with_length(iterator.len());
-        for (count, element) in iterator.enumerate() {
-            n[count] = element;
-        }
-        n
     }
 }
 
