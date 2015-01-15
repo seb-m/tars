@@ -71,8 +71,8 @@ impl<T: Copy, A: KeyAllocator> ProtKey<T, A> {
     /// default prevent any access.
     pub fn new(prot_buf: ProtBuf<T, A>) -> ProtKey<T, A> {
         unsafe {
-            KeyAllocator::protect_none(None::<A>, prot_buf.as_ptr() as *mut u8,
-                                       prot_buf.len_bytes());
+            <A as KeyAllocator>::protect_none(prot_buf.as_ptr() as *mut u8,
+                                              prot_buf.len_bytes());
         }
 
         ProtKey {
@@ -196,9 +196,8 @@ impl<'a, T: Copy, A: KeyAllocator> ProtKeyRead<'a, T, A> {
            read_ctr: Rc<Cell<usize>>) -> ProtKeyRead<'a, T, A> {
         if read_ctr.get() == NOREAD {
             unsafe {
-                KeyAllocator::protect_read(None::<A>,
-                                           ref_key.as_ptr() as *mut u8,
-                                           ref_key.len_bytes());
+                <A as KeyAllocator>::protect_read(ref_key.as_ptr() as *mut u8,
+                                                  ref_key.len_bytes());
             }
         }
         read_ctr.set(read_ctr.get().checked_add(1).unwrap());
@@ -222,9 +221,9 @@ impl<'a, T: Copy, A: KeyAllocator> Drop for ProtKeyRead<'a, T, A> {
         self.read_ctr.set(self.read_ctr.get().checked_sub(1).unwrap());
         if self.read_ctr.get() == NOREAD {
             unsafe {
-                KeyAllocator::protect_none(None::<A>,
-                                           self.ref_key.as_ptr() as *mut u8,
-                                           self.ref_key.len_bytes());
+                <A as KeyAllocator>::protect_none(
+                    self.ref_key.as_ptr() as *mut u8,
+                    self.ref_key.len_bytes());
             }
         }
     }
@@ -269,9 +268,8 @@ pub struct ProtKeyWrite<'a, T: 'a, A> {
 impl<'a, T: Copy, A: KeyAllocator> ProtKeyWrite<'a, T, A> {
     fn new(ref_key: RefMut<'a, ProtBuf<T, A>>) -> ProtKeyWrite<'a, T, A> {
         unsafe {
-            KeyAllocator::protect_write(None::<A>,
-                                        ref_key.as_ptr() as *mut u8,
-                                        ref_key.len_bytes());
+            <A as KeyAllocator>::protect_write(ref_key.as_ptr() as *mut u8,
+                                               ref_key.len_bytes());
         }
         ProtKeyWrite {
             ref_key: ref_key,
@@ -283,9 +281,8 @@ impl<'a, T: Copy, A: KeyAllocator> ProtKeyWrite<'a, T, A> {
 impl<'a, T: Copy, A: KeyAllocator> Drop for ProtKeyWrite<'a, T, A> {
     fn drop(&mut self) {
         unsafe {
-            KeyAllocator::protect_none(None::<A>,
-                                       self.ref_key.as_ptr() as *mut u8,
-                                       self.ref_key.len_bytes());
+            <A as KeyAllocator>::protect_none(self.ref_key.as_ptr() as *mut u8,
+                                              self.ref_key.len_bytes());
         }
     }
 }

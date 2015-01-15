@@ -26,8 +26,8 @@ unsafe fn alloc<A: Allocator, T>(count: usize) -> *mut T {
     let size = count.checked_mul(mem::size_of::<T>()).unwrap();
 
     // allocate
-    let ptr = Allocator::allocate(None::<A>, size,
-                                  mem::min_align_of::<T>()) as *mut T;
+    let ptr = <A as Allocator>::allocate(size,
+                                         mem::min_align_of::<T>()) as *mut T;
     assert!(!ptr.is_null());
     ptr
 }
@@ -36,8 +36,8 @@ unsafe fn dealloc<A: Allocator, T>(ptr: *mut T, count: usize) {
     let size = count.checked_mul(mem::size_of::<T>()).unwrap();
 
     // deallocate
-    Allocator::deallocate(None::<A>, ptr as *mut u8, size,
-                          mem::min_align_of::<T>());
+    <A as Allocator>::deallocate(ptr as *mut u8, size,
+                                 mem::min_align_of::<T>());
 }
 
 
