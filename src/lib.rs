@@ -10,9 +10,10 @@
        html_root_url = "http://doc.rust-lang.org/")]
 
 #![feature(unsafe_destructor)]
+#![feature(optin_builtin_traits)]
 
 // FIXME: temp
-//#![allow(unstable)]
+#![allow(unstable)]
 
 #[cfg(test)] extern crate test;
 #[cfg(test)] #[macro_use] extern crate log;
