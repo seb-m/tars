@@ -253,7 +253,7 @@ impl<T: FromPrimitive + Copy, A: Allocator> ProtBuf<T, A> {
         let len = bytes.len();
         let mut n: ProtBuf<T, A> = ProtBuf::with_length(len);
 
-        for i in range(0us, len) {
+        for i in 0us..(len) {
             n[i] = FromPrimitive::from_u8(bytes[i]).unwrap();
         }
         n
@@ -431,7 +431,7 @@ mod test {
         let a: ProtBuf<i64, NullHeapAllocator> = ProtBuf::new_zero(256);
         assert_eq!(a.as_slice(), r.as_slice());
 
-        for i in range(0us, 256) {
+        for i in 0us..256 {
             r[i] = i as i64;
             s[i] = i as u8;
         }
@@ -462,7 +462,7 @@ mod test {
         let a: ProtBuf<i64, ProtectedBufferAllocator> = ProtBuf::new_zero(256);
         assert_eq!(a.as_slice(), r.as_slice());
 
-        for i in range(0us, 256) {
+        for i in 0us..256 {
             r[i] = i as i64;
             s[i] = i as u8;
         }

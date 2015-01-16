@@ -12,7 +12,7 @@
 #![feature(unsafe_destructor)]
 
 // FIXME: temp
-#![allow(unstable)]
+//#![allow(unstable)]
 
 #[cfg(test)] extern crate test;
 #[cfg(test)] #[macro_use] extern crate log;
