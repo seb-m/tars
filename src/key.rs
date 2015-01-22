@@ -1,7 +1,7 @@
 //! Protected key
 //!
 use std::cell::{self, Cell, Ref, RefCell, RefMut};
-use std::fmt;
+use std::fmt::{self, Debug};
 use std::num::Int;
 use std::ops::{Deref, DerefMut};
 use std::rc::Rc;
@@ -171,7 +171,7 @@ impl<T: Copy, A: KeyAllocator> PartialEq for ProtKey<T, A> {
     }
 }
 
-impl<T: fmt::Show + Copy, A: KeyAllocator> fmt::Show for ProtKey<T, A> {
+impl<T: Debug + Copy, A: KeyAllocator> Debug for ProtKey<T, A> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self.try_read() {
             Some(r) => r.fmt(f),
@@ -249,8 +249,7 @@ impl<'a, T: Copy, A: KeyAllocator> PartialEq for ProtKeyRead<'a, T, A> {
     }
 }
 
-impl<'a, T, A: KeyAllocator> fmt::Show for ProtKeyRead<'a, T, A>
-    where T: fmt::Show + Copy {
+impl<'a, T: Debug + Copy, A: KeyAllocator> Debug for ProtKeyRead<'a, T, A> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         self.ref_key.fmt(f)
     }

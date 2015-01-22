@@ -43,7 +43,7 @@
 //!
 use std::cell::RefCell;
 use std::cmp;
-use std::fmt;
+use std::fmt::{self, Debug, Formatter};
 use std::hash::{self, SipHasher};
 use std::iter;
 use std::mem;
@@ -209,8 +209,8 @@ impl ThreadDir {
     }
 }
 
-impl fmt::Show for ThreadDir {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Debug for ThreadDir {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         self.dir.borrow().fmt(f)
     }
 }
@@ -975,8 +975,8 @@ impl Dir {
     }
 }
 
-impl fmt::Show for Dir {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+impl Debug for Dir {
+    fn fmt(&self, fmt: &mut Formatter) -> fmt::Result {
         try!(write!(fmt, "Current state:\n"));
 
         assert!(!self.regions.is_null());
@@ -1056,8 +1056,8 @@ impl Stats {
     }
 }
 
-impl fmt::Show for Stats {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+impl Debug for Stats {
+    fn fmt(&self, fmt: &mut Formatter) -> fmt::Result {
         try!(write!(fmt, "Stats:\n"));
         try!(write!(fmt, "larges:       {}\n", self.larges));
         try!(write!(fmt, "larges_bytes: {}\n", self.larges_bytes));
@@ -1277,8 +1277,8 @@ impl Region {
     }
 }
 
-impl fmt::Show for Region {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+impl Debug for Region {
+    fn fmt(&self, fmt: &mut Formatter) -> fmt::Result {
         if self.is_free() {
             return write!(fmt, "Region: free\n");
         }

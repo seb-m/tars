@@ -1,7 +1,7 @@
 //! Protected buffer
 //!
 use alloc::heap;
-use std::fmt;
+use std::fmt::{self, Debug, Formatter, LowerHex, UpperHex};
 use std::intrinsics;
 use std::iter::AdditiveIterator;
 use std::marker::Sync;
@@ -383,8 +383,8 @@ impl<T: Copy, A: Allocator> PartialEq for ProtBuf<T, A> {
 impl<T: Copy, A: Allocator> Eq for ProtBuf<T, A> {
 }
 
-impl<T: fmt::Show + Copy, A: Allocator> fmt::Show for ProtBuf<T, A> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl<T: Debug + Copy, A: Allocator> Debug for ProtBuf<T, A> {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         self.as_slice().fmt(f)
     }
 }
@@ -392,9 +392,9 @@ impl<T: fmt::Show + Copy, A: Allocator> fmt::Show for ProtBuf<T, A> {
 macro_rules! hex_fmt {
     ($T:ty, $U:ty) => {
         impl<A: Allocator> $T for ProtBuf<$U, A> {
-            fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            fn fmt(&self, f: &mut Formatter) -> fmt::Result {
                 for i in self.as_slice().iter() {
-                    try!(i.fmt(f));
+                    try!(fmt::Display::fmt(i, f));
                 }
                 Ok(())
             }
@@ -402,16 +402,16 @@ macro_rules! hex_fmt {
     }
 }
 
-hex_fmt!(fmt::UpperHex, usize);
-hex_fmt!(fmt::UpperHex, u8);
-hex_fmt!(fmt::UpperHex, u16);
-hex_fmt!(fmt::UpperHex, u32);
-hex_fmt!(fmt::UpperHex, u64);
-hex_fmt!(fmt::LowerHex, usize);
-hex_fmt!(fmt::LowerHex, u8);
-hex_fmt!(fmt::LowerHex, u16);
-hex_fmt!(fmt::LowerHex, u32);
-hex_fmt!(fmt::LowerHex, u64);
+hex_fmt!(UpperHex, usize);
+hex_fmt!(UpperHex, u8);
+hex_fmt!(UpperHex, u16);
+hex_fmt!(UpperHex, u32);
+hex_fmt!(UpperHex, u64);
+hex_fmt!(LowerHex, usize);
+hex_fmt!(LowerHex, u8);
+hex_fmt!(LowerHex, u16);
+hex_fmt!(LowerHex, u32);
+hex_fmt!(LowerHex, u64);
 
 
 #[cfg(test)]
