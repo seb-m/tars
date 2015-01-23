@@ -452,7 +452,7 @@ impl Dir {
         self.regions = regions_alloc(count) as *mut Region;
 
         // Move regions.
-        for _ in 0us..(prev_total) {
+        for _ in 0us..prev_total {
             if !(*prev_regions).is_free() {
                 let new_index = self.region_pick((*prev_regions).object);
                 let new_region = self.region_at_index_mut(new_index) as
@@ -1108,7 +1108,7 @@ impl Region {
 
         let max_index = max_slot_index(self.size);
 
-        for i in 0us..(max_index >> 3) {
+        for i in 0us..max_index >> 3 {
             self.mapping[i] = 0xff;
         }
 
@@ -1116,7 +1116,7 @@ impl Region {
             self.mapping[max_index >> 3] = 0;
         }
 
-        for i in 0us..(max_index % 8) {
+        for i in 0us..max_index % 8 {
             self.mapping[max_index >> 3] |= 1 << i;
         }
 
@@ -1179,13 +1179,13 @@ impl Region {
 
         let max_slot_index = max_slot_index(self.size);
 
-        for i in 0us..(max_slot_index >> 3) {
+        for i in 0us..max_slot_index >> 3 {
             if self.mapping[i] != byte_val {
                 return false;
             }
         }
 
-        for i in 0us..(max_slot_index % 8) {
+        for i in 0us..max_slot_index % 8 {
             let expected_val = if full {
                 0
             } else {
@@ -1222,7 +1222,7 @@ impl Region {
         let mut slot_index = utils::rng().gen_range(0us, max_slot_index);
 
         let mut found = false;
-        for _ in 0us..(max_slot_index) {
+        for _ in 0us..max_slot_index {
             if self.chunk_slot_is_free(slot_index) {
                 found = true;
                 break;
@@ -1462,7 +1462,7 @@ mod test {
         let mut p: [*mut u8; NA] = [ptr::null_mut(); NA];
         let mut s: [usize; NA] = [0us; NA];
 
-        for i in 0us..(NA) { // FIXME: update range notation?
+        for i in 0us..NA { // FIXME: update range notation?
             p[i] = unsafe {
                 let size = thread_rng().gen_range(0us, os::page_size() >> 1);
                 s[i] = size;
@@ -1498,7 +1498,7 @@ mod test {
             }
         }
 
-        for i in 0us..(NA) {
+        for i in 0us..NA {
             for j in 0us..s[i] {
                 read_byte(p[i] as *const u8, j);
             }
@@ -1519,7 +1519,7 @@ mod test {
         let mut p: [*mut u8; NA] = [ptr::null_mut(); NA];
         let mut s: [usize; NA] = [0us; NA];
 
-        for i in 0us..(NA) {
+        for i in 0us..NA {
             p[i] = unsafe {
                 let size = thread_rng().gen_range((os::page_size() >> 1) + 1,
                                                   os::page_size() << 3);
@@ -1533,7 +1533,7 @@ mod test {
             }
         }
 
-        for i in 0us..(NA) {
+        for i in 0us..NA {
             for j in 0us..s[i] {
                 read_byte(p[i] as *const u8, j);
             }
@@ -1553,7 +1553,7 @@ mod test {
         let mut p: [*mut u8; NA] = [ptr::null_mut(); NA];
         let mut s: [usize; NA] = [0us; NA];
 
-        for i in 0us..(NA) {
+        for i in 0us..NA {
             p[i] = unsafe {
                 let size = thread_rng().gen_range(0, os::page_size() << 3);
                 s[i] = size;
@@ -1566,7 +1566,7 @@ mod test {
             }
         }
 
-        for i in 0us..(NA) {
+        for i in 0us..NA {
             for j in 0us..s[i] {
                 read_byte(p[i] as *const u8, j);
             }
@@ -1586,7 +1586,7 @@ mod test {
         let mut p: [*mut u8; NA] = [ptr::null_mut(); NA];
         let mut s: [usize; NA] = [0us; NA];
 
-        for i in 0us..(NA) {
+        for i in 0us..NA {
             p[i] = unsafe {
                 let size = thread_rng().gen_range(0us, os::page_size() << 2);
                 s[i] = size;
@@ -1628,7 +1628,7 @@ mod test {
 
         print_dir_state();
 
-        for i in 0us..(NA) {
+        for i in 0us..NA {
             for j in 0us..s[i] {
                 read_byte(p[i] as *const u8, j);
             }
@@ -1664,12 +1664,12 @@ mod test {
             assert!(!sptr.is_null() && !kptr.is_null());
             assert!(sptr as usize % align == 0 && kptr as usize % align == 0);
 
-            for i in 0us..(size) {
+            for i in 0us..size {
                 write_byte(sptr, i);
                 write_byte(kptr, i);
             }
 
-            for i in 0us..(size) {
+            for i in 0us..size {
                 read_byte(sptr as *const u8, i);
                 read_byte(kptr as *const u8, i);
             }
@@ -1820,7 +1820,7 @@ mod test {
             assert!(!p1.is_null());
             assert!(!p2.is_null());
 
-            for i in 0us..(size1) {
+            for i in 0us..size1 {
                 write_byte(p1, i);
                 write_byte(p2, i);
             }
@@ -1836,12 +1836,12 @@ mod test {
             }
 
             if size2 > size1 {
-                for i in size1..(size2) {
+                for i in size1..size2 {
                     write_byte(p1, i);
                     write_byte(p2, i);
                 }
 
-                for i in 0us..(size2) {
+                for i in 0us..size2 {
                     read_byte(p1 as *const u8, i);
                     read_byte(p2 as *const u8, i);
                 }
@@ -1860,7 +1860,7 @@ mod test {
             let mut p1 = super::malloc(size, 0);
             assert!(!p1.is_null());
 
-            for i in 0us..(size) {
+            for i in 0us..size {
                 write_byte(p1, i);
             }
 

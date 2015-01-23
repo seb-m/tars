@@ -250,7 +250,7 @@ impl<T: FromPrimitive + Copy, A: Allocator> ProtBuf<T, A> {
         let len = bytes.len();
         let mut n: ProtBuf<T, A> = ProtBuf::with_length(len);
 
-        for i in 0us..(len) {
+        for i in 0us..len {
             n[i] = FromPrimitive::from_u8(bytes[i]).unwrap();
         }
         n

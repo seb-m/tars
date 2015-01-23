@@ -43,7 +43,7 @@ pub fn bytes_eq<T>(x: &[T], y: &[T]) -> bool {
 
     let mut d: u8 = 0;
     unsafe {
-        for _ in 0us..(size) {
+        for _ in 0us..size {
             d |= *px ^ *py;
             px = px.offset(1);
             py = py.offset(1);
