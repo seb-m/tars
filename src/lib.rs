@@ -4,16 +4,23 @@
 //!
 //! Souce code [repository](https://github.com/seb-m/tars) on Github.
 #![crate_name = "tars"]
-#![experimental]
-#![doc(html_logo_url = "http://www.rust-lang.org/logos/rust-logo-128x128-blk.png",
+#![doc(html_logo_url = "http://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png",
        html_favicon_url = "http://www.rust-lang.org/favicon.ico",
        html_root_url = "http://doc.rust-lang.org/")]
 
 #![feature(unsafe_destructor)]
 #![feature(optin_builtin_traits)]
+#![feature(core)]
+#![feature(libc)]
+#![feature(rand)]
+#![feature(hash)]
+#![feature(alloc)]
+#![feature(os)]
 
-// FIXME: temp
-#![allow(unstable)]
+#![cfg_attr(test, feature(rustc_private))]
+#![cfg_attr(test, feature(test))]
+#![cfg_attr(test, feature(path))]
+#![cfg_attr(test, feature(std_misc))]
 
 #[cfg(test)] extern crate test;
 #[cfg(test)] #[macro_use] extern crate log;
