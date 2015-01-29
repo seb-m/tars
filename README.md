@@ -7,15 +7,15 @@
 
 Data structure containers with protected memory.
 
-The goal is to provide data structure containers with protected memory. It implements a custom allocator inspired by [OpenBSD's malloc](http://www.openbsd.org/cgi-bin/man.cgi?query=malloc&arch=default&manpath=OpenBSD-current) and is used to allocate its heap memory and provide memory protections.
+The goal is to provide data structure containers with protected memory. To achieve this goal, at a low level this project implements a custom allocator inspired by [OpenBSD's malloc](http://www.openbsd.org/cgi-bin/man.cgi?query=malloc&arch=default&manpath=OpenBSD-current) which is used to allocate heap memory and provide memory protections.
 
-Two data containers are currently built on top of this allocator. They follow two common use cases. `ProtBuf` is a fixed-length array that can be used as buffer to handle data used in sensible operations while `ProtKey` extending `ProtBuf` is well suited for storing and handling more persistent data like secret keys.
+Two data containers are currently built on top of this allocator. They follow two common use cases. `ProtBuf` is a fixed-length array that can be used as buffer to handle data used in sensible operations like for instance internal buffers in crypto operations. While `ProtKey` extending `ProtBuf` is itself well suited for storing and handling more persistent data like secret keys with more fine grained access control.
 
 
 ### Known limitations
 
 * It's not currently possible to be sure if the compiler/LLVM won't do something unexpected such as optimizing-out instructions, or generate intermediate variables with copy of protected data on the stack. There's actually a lot of moving parts: language, compiler, code generation, target architectures...
-* Experimental code, lot of `unsafe`. Code and interfaces may change.
+* Experimental code, interfaces may change.
 * Only tested on OS X and Linux (x86, x86_64). Not compatible with Windows.
 * Slow allocations compared to general purpose allocators.
 
