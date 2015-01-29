@@ -5,11 +5,11 @@
 
 ## Description
 
-Data structure containers with protected memory.
+Provide data structure containers with protected memory.
 
-The goal is to provide data structure containers with protected memory. To achieve this goal, at a low level this project implements a custom allocator inspired by [OpenBSD's malloc](http://www.openbsd.org/cgi-bin/man.cgi?query=malloc&arch=default&manpath=OpenBSD-current) which is used to allocate heap memory and provide memory protections.
+At a low level this project implements a custom allocator inspired by [OpenBSD's malloc](http://www.openbsd.org/cgi-bin/man.cgi?query=malloc&arch=default&manpath=OpenBSD-current) which is used to allocate heap memory and provide memory protections used by data containers.
 
-Two data containers are currently built on top of this allocator. They follow two common use cases. `ProtBuf` is a fixed-length array that can be used as buffer to handle data used in sensible operations like for instance internal buffers in crypto operations. While `ProtKey` extending `ProtBuf` is itself well suited for storing and handling more persistent data like secret keys with more fine grained access control.
+Two data containers are currently built on top of this allocator. They follow two common use cases where `ProtBuf` is a fixed-length array that can be used as buffer to handle data used in sensible operations like for instance internal buffers in crypto operations. Whereas `ProtKey` extending `ProtBuf` is more adapted for storing and handling more persistent data like secret keys requiring more fine grained access control.
 
 
 ### Known limitations
