@@ -300,7 +300,7 @@ impl<T: Copy, A: Allocator> Index<Range<usize>> for ProtBuf<T, A> {
     type Output = [T];
 
     fn index(&self, index: &Range<usize>) -> &[T] {
-        self.as_slice().index(index)
+        self.index(index)
     }
 }
 
@@ -308,7 +308,7 @@ impl<T: Copy, A: Allocator> Index<RangeTo<usize>> for ProtBuf<T, A> {
     type Output = [T];
 
     fn index(&self, index: &RangeTo<usize>) -> &[T] {
-        self.as_slice().index(index)
+        self.index(index)
     }
 }
 
@@ -316,7 +316,7 @@ impl<T: Copy, A: Allocator> Index<RangeFrom<usize>> for ProtBuf<T, A> {
     type Output = [T];
 
     fn index(&self, index: &RangeFrom<usize>) -> &[T] {
-        self.as_slice().index(index)
+        self.index(index)
     }
 }
 
@@ -332,7 +332,7 @@ impl<T: Copy, A: Allocator> IndexMut<Range<usize>> for ProtBuf<T, A> {
     type Output = [T];
 
     fn index_mut(&mut self, index: &Range<usize>) -> &mut [T] {
-        self.as_mut_slice().index_mut(index)
+        self.index_mut(index)
     }
 }
 
@@ -340,7 +340,7 @@ impl<T: Copy, A: Allocator> IndexMut<RangeTo<usize>> for ProtBuf<T, A> {
     type Output = [T];
 
     fn index_mut(&mut self, index: &RangeTo<usize>) -> &mut [T] {
-        self.as_mut_slice().index_mut(index)
+        self.index_mut(index)
     }
 }
 
@@ -348,7 +348,7 @@ impl<T: Copy, A: Allocator> IndexMut<RangeFrom<usize>> for ProtBuf<T, A> {
     type Output = [T];
 
     fn index_mut(&mut self, index: &RangeFrom<usize>) -> &mut [T] {
-        self.as_mut_slice().index_mut(index)
+        self.index_mut(index)
     }
 }
 
@@ -393,7 +393,7 @@ macro_rules! hex_fmt {
     ($T:ty, $U:ty) => {
         impl<A: Allocator> $T for ProtBuf<$U, A> {
             fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-                for i in self.as_slice().iter() {
+                for i in self.iter() {
                     try!(fmt::Display::fmt(i, f));
                 }
                 Ok(())

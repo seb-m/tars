@@ -345,7 +345,7 @@ mod test {
         let key =
             ProtBuf::<u8, ProtectedKeyAllocator>::new_rand_os(256).into_key();
 
-        for i in key.write().as_mut_slice().iter_mut() {
+        for i in key.write().iter_mut() {
             *i = 0;
         }
         assert_eq!(*key.read(), zero);
