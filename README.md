@@ -7,9 +7,9 @@
 
 Provide data structure containers with protected memory.
 
-At a low level this project implements a custom allocator inspired by [OpenBSD's malloc](http://www.openbsd.org/cgi-bin/man.cgi?query=malloc&arch=default&manpath=OpenBSD-current) which is used to allocate heap memory and provide memory protections used by data containers.
+At a low level this project implements a [custom allocator](http://seb.dbzteam.org/rs/tars/tars/malloc/index.html) inspired by [OpenBSD's malloc](http://www.openbsd.org/cgi-bin/man.cgi?query=malloc&arch=default&manpath=OpenBSD-current) which is used to allocate heap memory and provide memory protections used by data containers.
 
-Two data containers are currently built on top of this allocator. They follow two common use cases where `ProtBuf` is a fixed-length array that can be used as buffer to handle data used in sensible operations like for instance internal buffers in crypto operations. Whereas `ProtKey` extending `ProtBuf` is more adapted for storing and handling more persistent data like secret keys requiring more fine grained access control.
+Two data containers are currently built on top of this allocator. They follow two common use cases where [ProtBuf](http://seb.dbzteam.org/rs/tars/tars/struct.ProtBuf.html) is a fixed-length array that can be used as buffer to handle data used in sensible operations like for instance internal buffers in crypto operations. Whereas [ProtKey](http://seb.dbzteam.org/rs/tars/tars/struct.ProtKey.html) extending `ProtBuf` is more adapted for storing and handling more persistent data like secret keys requiring more fine grained access control.
 
 
 ### Known limitations
