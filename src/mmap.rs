@@ -300,8 +300,9 @@ mod adv_imp {
             // FIXME: EINVAL errors are currently ignored because
             // MADV_DONTDUMP and MADV_DONTFORK are not valid advices on
             // old kernels respectively Linux < 3.4 and Linux < 2.6.16.
-            // There should be a better way to check for the availability
-            // of this flag in the kernel and in the libc.
+            // There should be an explicit way - other than relying on
+            // kernel's version - to check for the availability of these
+            // flags in the kernel.
             if errno != EINVAL as usize {
                 panic!("madvise failed: {} ({})",
                        os::error_string(errno as usize), errno);

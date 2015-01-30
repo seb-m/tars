@@ -235,7 +235,7 @@ impl Drop for LocalDir {
             // info!("{}", *self.dir);
 
             // Force dealloc regions metadata and objects to clean-up the heap.
-            (*self.dir).dealloc_all_regions();
+            (*self.dir).scavenge();
             // Dealloc Dir.
             dir_dealloc(self.dir as *mut u8);
             self.dir = ptr::null_mut();
@@ -407,8 +407,10 @@ impl Dir {
 
     // This method try to force deallocate all allocated structures
     // belonging to this Dir. After calling this method, its corresponding
-    // instance must not be used anymore.
-    pub unsafe fn dealloc_all_regions(&mut self) {
+    // instance is left in an undetermined state and must not be used
+    // anymore.
+    pub unsafe fn scavenge(&mut self) {
+        // Only proceed with deallocations if current state is sound.
         if self.regions.is_null() || !self.check_integrity() {
             return;
         }
@@ -1462,7 +1464,7 @@ mod test {
         let mut p: [*mut u8; NA] = [ptr::null_mut(); NA];
         let mut s: [usize; NA] = [0us; NA];
 
-        for i in 0us..NA { // FIXME: update range notation?
+        for i in 0us..NA {
             p[i] = unsafe {
                 let size = thread_rng().gen_range(0us, os::page_size() >> 1);
                 s[i] = size;
