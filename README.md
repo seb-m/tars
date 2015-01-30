@@ -5,19 +5,19 @@
 
 ## Description
 
-Provide data structure containers with protected memory.
+[Rust](http://www.rust-lang.org/) library implementing data structure containers with protected memory.
 
-At a low level this project implements a [custom allocator](http://seb.dbzteam.org/rs/tars/tars/malloc/index.html) inspired by [OpenBSD's malloc](http://www.openbsd.org/cgi-bin/man.cgi?query=malloc&arch=default&manpath=OpenBSD-current) which is used to allocate heap memory and provide memory protections used by data containers.
+At a low level this project implements a [custom allocator](http://seb.dbzteam.org/rs/tars/tars/malloc/index.html) inspired by [OpenBSD's malloc](http://www.openbsd.org/cgi-bin/man.cgi?query=malloc&arch=default&manpath=OpenBSD-current) which is used to allocate heap memory and provide memory protections.
 
-Two data containers are currently built on top of this allocator. They follow two common use cases where [ProtBuf](http://seb.dbzteam.org/rs/tars/tars/struct.ProtBuf.html) is a fixed-length array that can be used as buffer to handle data used in sensible operations like for instance internal buffers in crypto operations. Whereas [ProtKey](http://seb.dbzteam.org/rs/tars/tars/struct.ProtKey.html) extending `ProtBuf` is more adapted for storing and handling more persistent data like secret keys requiring more fine grained access control.
+Two data containers are currently built on top of this allocator. They follow two common use cases where the first container [ProtBuf](http://seb.dbzteam.org/rs/tars/tars/struct.ProtBuf.html) is a fixed-length array that can be used as buffer to handle data used in sensible operations like for instance internal buffers in crypto operations. The second container [ProtKey](http://seb.dbzteam.org/rs/tars/tars/struct.ProtKey.html) extending `ProtBuf` is more adapted for storing and handling more persistent data like secret keys requiring more fine-grained access control. When used with its default allocator `ProtBuf` is particularly well adapted for handling small data buffers by possibly grouping them together on a same memory page and by caching empty pages when all buffers are deallocated.
 
 
 ### Known limitations
 
-* It's not currently possible to be sure if the compiler/LLVM won't do something unexpected such as optimizing-out instructions, or generate intermediate variables with copy of protected data on the stack. There's actually a lot of moving parts: language, compiler, code generation, target architectures...
+* It's not currently possible to be sure if the compiler/LLVM won't do something unexpected such as optimizing-out instructions, or generate intermediate variables with copy of protected data on the stack. There's actually a lot of moving parts: language, compiler, code generation, target architectures.
 * Experimental code, interfaces may change.
-* Only tested on OS X and Linux (x86, x86_64). Not compatible with Windows.
-* Slow allocations compared to general purpose allocators.
+* Only tested on OS X and Linux (`x86`, `x86_64`). Not compatible with Windows.
+* Slow allocations compared to general purpose allocators albeit more optimized than naive `mmap` pages allocations in cases where `ProtBuf` is used with its default allocator.
 
 
 ## Documentation
