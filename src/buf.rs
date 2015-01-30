@@ -8,7 +8,7 @@ use std::marker::Sync;
 use std::mem;
 use std::num::{Int, FromPrimitive};
 use std::ops::{Deref, DerefMut, Index, IndexMut,
-               Range, RangeTo, RangeFrom, FullRange};
+               Range, RangeTo, RangeFrom, RangeFull};
 use std::ptr;
 use std::rand::Rng;
 use std::raw::Slice;
@@ -67,7 +67,7 @@ unsafe fn dealloc<A: Allocator, T>(ptr: *mut T, count: usize) {
 /// assert_eq!(buf[21], 0);
 ///
 /// // Use a slice to access and manipulate the underlying memory buffer
-/// my_function(buf.as_mut_slice());
+/// my_function(&mut buf);
 ///
 /// // Create a new random key
 /// let key: ProtKey<u8, ProtectedKeyAllocator> =
@@ -181,7 +181,7 @@ impl<T: Copy, A: Allocator> ProtBuf<T, A> {
     /// Build a new instance by concatenating `ProtBuf` `items` together.
     pub fn from_bufs(items: &[&ProtBuf<T, A>]) -> ProtBuf<T, A> {
         let v: Vec<&[T]> = items.iter().map(|x| (*x).as_slice()).collect();
-        ProtBuf::from_slices(v.as_slice())
+        ProtBuf::from_slices(&v)
     }
 
     /// Return a mutable slice into `self`.
@@ -276,7 +276,7 @@ impl<T: Copy, A: Allocator> Drop for ProtBuf<T, A> {
 
 impl<T: Copy, A: Allocator> Clone for ProtBuf<T, A> {
     fn clone(&self) -> ProtBuf<T, A> {
-        ProtBuf::from_slice(self.as_slice())
+        ProtBuf::from_slice(self)
     }
 }
 
@@ -320,10 +320,10 @@ impl<T: Copy, A: Allocator> Index<RangeFrom<usize>> for ProtBuf<T, A> {
     }
 }
 
-impl<T: Copy, A: Allocator> Index<FullRange> for ProtBuf<T, A> {
+impl<T: Copy, A: Allocator> Index<RangeFull> for ProtBuf<T, A> {
     type Output = [T];
 
-    fn index(&self, _index: &FullRange) -> &[T] {
+    fn index(&self, _index: &RangeFull) -> &[T] {
         self.as_slice()
     }
 }
@@ -352,10 +352,10 @@ impl<T: Copy, A: Allocator> IndexMut<RangeFrom<usize>> for ProtBuf<T, A> {
     }
 }
 
-impl<T: Copy, A: Allocator> IndexMut<FullRange> for ProtBuf<T, A> {
+impl<T: Copy, A: Allocator> IndexMut<RangeFull> for ProtBuf<T, A> {
     type Output = [T];
 
-    fn index_mut(&mut self, _index: &FullRange) -> &mut [T] {
+    fn index_mut(&mut self, _index: &RangeFull) -> &mut [T] {
         self.as_mut_slice()
     }
 }
@@ -376,7 +376,7 @@ impl<T: Copy, A: Allocator> DerefMut for ProtBuf<T, A> {
 
 impl<T: Copy, A: Allocator> PartialEq for ProtBuf<T, A> {
     fn eq(&self, other: &ProtBuf<T, A>) -> bool {
-        utils::bytes_eq(self.as_slice(), other.as_slice())
+        utils::bytes_eq(self, other)
     }
 }
 
@@ -433,12 +433,10 @@ mod test {
             s[i] = i as u8;
         }
 
-        let b: ProtBuf<i64, NullHeapAllocator> =
-            ProtBuf::from_bytes(s.as_slice());
+        let b: ProtBuf<i64, NullHeapAllocator> = ProtBuf::from_bytes(&s);
         assert_eq!(b.as_slice(), r.as_slice());
 
-        let c: ProtBuf<i64, NullHeapAllocator> =
-            ProtBuf::from_slice(r.as_slice());
+        let c: ProtBuf<i64, NullHeapAllocator> = ProtBuf::from_slice(&r);
         assert_eq!(c.as_slice(), r.as_slice());
 
         let d: ProtBuf<i64, NullHeapAllocator> = unsafe {
@@ -446,8 +444,7 @@ mod test {
         };
         assert_eq!(d.as_slice(), c.as_slice());
 
-        let e: ProtBuf<i64, NullHeapAllocator> =
-            ProtBuf::from_slice(r.as_slice());
+        let e: ProtBuf<i64, NullHeapAllocator> = ProtBuf::from_slice(&r);
         assert_eq!(d, e);
     }
 
@@ -464,12 +461,10 @@ mod test {
             s[i] = i as u8;
         }
 
-        let b: ProtBuf<i64, ProtectedBufferAllocator> =
-            ProtBuf::from_bytes(s.as_slice());
+        let b: ProtBuf<i64, ProtectedBufferAllocator> = ProtBuf::from_bytes(&s);
         assert_eq!(b.as_slice(), r.as_slice());
 
-        let c: ProtBuf<i64, NullHeapAllocator> =
-            ProtBuf::from_slice(r.as_slice());
+        let c: ProtBuf<i64, NullHeapAllocator> = ProtBuf::from_slice(&r);
         assert_eq!(c.as_slice(), r.as_slice());
 
         let d: ProtBuf<i64, ProtectedBufferAllocator> = unsafe {
@@ -477,8 +472,7 @@ mod test {
         };
         assert_eq!(d.as_slice(), c.as_slice());
 
-        let e: ProtBuf<i64, ProtectedBufferAllocator> =
-            ProtBuf::from_slice(r.as_slice());
+        let e: ProtBuf<i64, ProtectedBufferAllocator> = ProtBuf::from_slice(&r);
         assert_eq!(d, e);
     }
 

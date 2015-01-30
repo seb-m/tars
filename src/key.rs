@@ -85,7 +85,7 @@ impl<T: Copy, A: KeyAllocator> ProtKey<T, A> {
     /// If `prot_buf` already uses a `KeyAllocator` there is no need to make
     /// a copy so directly call the default cstor `new` instead.
     pub fn from_buf<B: Allocator>(prot_buf: ProtBuf<T, B>) -> ProtKey<T, A> {
-        let buf = ProtBuf::from_slice(prot_buf.as_slice());
+        let buf = ProtBuf::from_slice(&prot_buf);
         ProtKey::new(buf)
     }
 
@@ -239,7 +239,7 @@ impl<'a, T: Copy, A: KeyAllocator> Deref for ProtKeyRead<'a, T, A> {
 
 impl<'a, T: Copy, A: KeyAllocator> AsSlice<T> for ProtKeyRead<'a, T, A> {
     fn as_slice(&self) -> &[T] {
-        (**self).as_slice()
+        &***self
     }
 }
 
@@ -319,7 +319,7 @@ mod test {
 
         let key = ProtKey::new(s1);
 
-        assert_eq!(key.read().as_slice(), s2.as_slice());
+        assert_eq!(&**key.read(), &*s2);
         assert_eq!(&key.read()[], &s2[]);
         assert_eq!(*key.read(), s2);
 
@@ -334,7 +334,7 @@ mod test {
             assert_eq!(r3, r2);
         }
 
-        key.read_with(|k| assert_eq!(&k[], s2.as_slice()));
+        key.read_with(|k| assert_eq!(&k[], &*s2));
 
         assert!(key.try_write().is_some());
     }
