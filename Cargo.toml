@@ -12,7 +12,7 @@ name = "tars"
 [features]
 
 # Disable mlock calls on memory pages allocations, may be needed in
-# environments with restricted resource limit.
+# environments with restricted resources limits.
 no_mlock = []
 
 # Enable detailed statistics collection of memory allocations, should
