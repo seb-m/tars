@@ -43,7 +43,7 @@ unsafe fn dealloc<A: Allocator, T>(ptr: *mut T, count: usize) {
 
 /// A protected Buffer
 ///
-/// Fixed-length buffer used to handle sensible data. Try to minimize
+/// Fixed-length buffer used to handle sensitive data. Try to minimize
 /// data copy and zero-out memory on deallocation.
 ///
 /// Such a protected buffer must be associated with a protected memory

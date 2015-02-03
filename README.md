@@ -1,6 +1,4 @@
-# TARS
-
-[![Build Status](https://travis-ci.org/seb-m/tars.svg?branch=master)](https://travis-ci.org/seb-m/tars)
+# TARS [![Build Status](https://travis-ci.org/seb-m/tars.svg?branch=master)](https://travis-ci.org/seb-m/tars)
 
 
 ## Description
@@ -9,7 +7,7 @@
 
 At a low level this project implements a [custom allocator](http://seb.dbzteam.org/rs/tars/tars/malloc/index.html) inspired by [OpenBSD's malloc](http://www.openbsd.org/cgi-bin/man.cgi?query=malloc&arch=default&manpath=OpenBSD-current) which is used to allocate heap memory and provide memory protections.
 
-Two data containers are currently built on top of this allocator. They follow two common use cases where the first container [ProtBuf](http://seb.dbzteam.org/rs/tars/tars/struct.ProtBuf.html) is a fixed-length array that can be used as buffer to handle data used in sensible operations like for instance internal buffers in crypto operations. The second container [ProtKey](http://seb.dbzteam.org/rs/tars/tars/struct.ProtKey.html) extending `ProtBuf` is more adapted for storing and handling more persistent data like secret keys requiring more fine-grained access control. When used with [its default allocator](http://seb.dbzteam.org/rs/tars/tars/allocator/struct.ProtectedBufferAllocator.html) `ProtBuf` is particularly well adapted for handling small data buffers by possibly grouping them together on a same memory page and by caching empty pages when all buffers are deallocated.
+Two data containers are currently built on top of this allocator. They follow two common use cases where the first container [ProtBuf](http://seb.dbzteam.org/rs/tars/tars/struct.ProtBuf.html) is a fixed-length array that can be used as buffer to handle data used in sensitive operations like for instance internal buffers in crypto operations. The second container [ProtKey](http://seb.dbzteam.org/rs/tars/tars/struct.ProtKey.html) extending `ProtBuf` is more adapted for storing and handling more persistent data like secret keys requiring more fine-grained access control. When used with [its default allocator](http://seb.dbzteam.org/rs/tars/tars/allocator/struct.ProtectedBufferAllocator.html) `ProtBuf` is particularly well adapted for handling small data buffers by possibly grouping them together on a same memory page and by caching empty pages when all buffers are deallocated.
 
 
 ### Known limitations

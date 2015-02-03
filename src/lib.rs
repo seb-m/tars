@@ -16,6 +16,8 @@
 #![feature(hash)]
 #![feature(alloc)]
 #![feature(os)]
+#![feature(env)]
+#![feature(std_misc)]
 
 #![cfg_attr(test, feature(rustc_private))]
 #![cfg_attr(test, feature(test))]

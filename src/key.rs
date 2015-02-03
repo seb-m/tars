@@ -1,6 +1,6 @@
 //! Protected key
 //!
-use std::cell::{self, Cell, Ref, RefCell, RefMut};
+use std::cell::{self, Cell, Ref, RefCell, RefMut, BorrowState};
 use std::fmt::{self, Debug};
 use std::num::Int;
 use std::ops::{Deref, DerefMut};
@@ -102,10 +102,9 @@ impl<T: Copy, A: KeyAllocator> ProtKey<T, A> {
     /// Return a wrapper to the key in read mode. Return `None`
     /// if the key is already accessed in write mode.
     pub fn try_read(&self) -> Option<ProtKeyRead<T, A>> {
-        match self.key.try_borrow() {
-            Some(borrowed_key) => Some(ProtKeyRead::new(borrowed_key,
-                                                        self.read_ctr.clone())),
-            None => None
+        match self.key.borrow_state() {
+            BorrowState::Reading|BorrowState::Unused => Some(self.read()),
+            _ => None
         }
     }
 
@@ -127,16 +126,10 @@ impl<T: Copy, A: KeyAllocator> ProtKey<T, A> {
     /// Return a wrapper to the key in write mode. Return `None`
     /// if the key is already accessed in read or write mode.
     pub fn try_write(&self) -> Option<ProtKeyWrite<T, A>> {
-        let key_write = match self.key.try_borrow_mut() {
-            Some(borrowed_key) => Some(ProtKeyWrite::new(borrowed_key)),
-            None => None
-        };
-
-        if key_write.is_some() {
-            assert_eq!(self.read_ctr.get(), NOREAD);
+        match self.key.borrow_state() {
+            BorrowState::Unused => Some(self.write()),
+            _ => None
         }
-
-        key_write
     }
 
     /// Access the key in write mode and pass a reference to closure `f`.
