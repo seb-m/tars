@@ -169,7 +169,7 @@ impl<T: Copy, A: Allocator> ProtBuf<T, A> {
         let mut idx: isize = 0;
 
         unsafe {
-            for it in items.iter() {
+            for it in items {
                 ptr::copy_nonoverlapping_memory(n.ptr.offset(idx),
                                                 it.as_ptr(), it.len());
                 idx += it.len() as isize;
