@@ -6,10 +6,10 @@ license = "MIT/ASL2"
 repository = "https://github.com/seb-m/tars"
 homepage = "https://github.com/seb-m/tars"
 documentation = "http://seb.dbzteam.org/rs/tars/tars/"
+readme = "README.md"
 description = """
 Data structure containers with protected memory
 """
-readme = "README.md"
 
 [lib]
 name = "tars"
