@@ -10,14 +10,12 @@
 #![feature(unsafe_destructor)]
 #![feature(optin_builtin_traits)]
 #![feature(core)]
-#![feature(libc)]
 #![feature(hash)]
 #![feature(alloc)]
 #![feature(os)]
 #![feature(env)]
 #![feature(std_misc)]
 
-#![cfg_attr(test, feature(rustc_private))]
 #![cfg_attr(test, feature(test))]
 #![cfg_attr(test, feature(path))]
 #![cfg_attr(test, feature(std_misc))]
@@ -26,8 +24,8 @@
 #[cfg(test)] #[macro_use] extern crate log;
 
 extern crate alloc;
-extern crate libc;
 
+extern crate libc;
 extern crate rand;
 
 pub use allocator::DefaultBufferAllocator;
