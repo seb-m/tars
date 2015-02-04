@@ -10,8 +10,9 @@ use std::num::{Int, FromPrimitive};
 use std::ops::{Deref, DerefMut, Index, IndexMut,
                Range, RangeTo, RangeFrom, RangeFull};
 use std::ptr;
-use std::rand::Rng;
 use std::raw::Slice;
+
+use rand::Rng;
 
 use allocator::{Allocator, KeyAllocator, DefaultBufferAllocator};
 use key::ProtKey;

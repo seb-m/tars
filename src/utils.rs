@@ -2,9 +2,10 @@
 use std::intrinsics;
 use std::mem;
 use std::num::Int;
-use std::rand::{self, Rng, ThreadRng};
-use std::rand::distributions::range::SampleRange;
-use std::rand::os::OsRng;
+
+use rand::{self, Rng, ThreadRng};
+use rand::distributions::range::SampleRange;
+use rand::os::OsRng;
 
 
 #[allow(dead_code)]
@@ -81,8 +82,9 @@ pub fn gen_range<R: Rng, T: PartialOrd + SampleRange>(rng: &mut R,
 
 #[cfg(test)]
 mod tests {
-    use std::path::BytesContainer;
-    use std::rand::random;
+    use std::old_path::BytesContainer;
+
+    use rand::random;
 
 
     #[test]

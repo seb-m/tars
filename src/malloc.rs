@@ -50,8 +50,9 @@ use std::mem;
 use std::num::{Int, UnsignedInt, ToPrimitive};
 use std::ops::{Deref, DerefMut};
 use std::ptr;
-use std::rand::Rng;
 use std::rc::Rc;
+
+use rand::Rng;
 
 use mmap::{self, RangePos, Prot};
 use utils;
@@ -1432,10 +1433,11 @@ mod test {
     use std::iter;
     use std::num::ToPrimitive;
     use std::ptr;
-    use std::rand::{thread_rng, Rng};
     use std::sync::Future;
     use std::usize;
     use test::Bencher;
+
+    use rand::{thread_rng, Rng};
 
     use mmap;
 
