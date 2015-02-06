@@ -53,7 +53,7 @@ const NOREAD: usize = 0;
 /// }   // Relinquish its read-access
 ///
 /// // Alternative way to read its content
-/// key.read_with(|k| encrypt(&k[], b"abc"));
+/// key.read_with(|k| encrypt(&k[..], b"abc"));
 ///
 /// // Access it in write-mode
 /// if let Some(mut key_write) = key.try_write() {
@@ -313,7 +313,7 @@ mod test {
         let key = ProtKey::new(s1);
 
         assert_eq!(&**key.read(), &*s2);
-        assert_eq!(&key.read()[], &s2[]);
+        assert_eq!(&key.read()[..], &s2[]);
         assert_eq!(*key.read(), s2);
 
         {
@@ -327,7 +327,7 @@ mod test {
             assert_eq!(r3, r2);
         }
 
-        key.read_with(|k| assert_eq!(&k[], &*s2));
+        key.read_with(|k| assert_eq!(&k[..], &*s2));
 
         assert!(key.try_write().is_some());
     }
