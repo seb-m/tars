@@ -4,12 +4,12 @@
 //!
 //! Souce code [repository](https://github.com/seb-m/tars) on Github.
 #![crate_name = "tars"]
-#![unstable(feature = "tars")]
 
 #![doc(html_logo_url = "http://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png",
        html_favicon_url = "http://www.rust-lang.org/favicon.ico",
        html_root_url = "http://doc.rust-lang.org/")]
 
+#![deny(stable_features)]
 #![feature(unsafe_destructor)]
 #![feature(optin_builtin_traits)]
 #![feature(core)]

@@ -84,7 +84,7 @@ impl<T, A> !Sync for ProtBuf<T, A> {
 }
 
 impl<T: Copy, A: Allocator> ProtBuf<T, A> {
-    fn from_raw_parts(length: usize, ptr: *mut T) -> ProtBuf<T, A> {
+    fn new_with_parts(ptr: *mut T, length: usize) -> ProtBuf<T, A> {
         ProtBuf {
             len: length,
             ptr: ptr
@@ -104,13 +104,13 @@ impl<T: Copy, A: Allocator> ProtBuf<T, A> {
 
     fn with_length(length: usize) -> ProtBuf<T, A> {
         if mem::size_of::<T>() == 0 || length == 0 {
-            return ProtBuf::from_raw_parts(0, heap::EMPTY as *mut T);
+            return ProtBuf::new_with_parts(heap::EMPTY as *mut T, 0);
         }
 
         let ptr = unsafe {
             alloc::<A, T>(length)
         };
-        ProtBuf::from_raw_parts(length, ptr)
+        ProtBuf::new_with_parts(ptr, length)
     }
 
     /// New allocated buffer with unitilialized memory.
@@ -151,12 +151,12 @@ impl<T: Copy, A: Allocator> ProtBuf<T, A> {
     /// New buffer with elements copied from slice `values`.
     pub fn from_slice(values: &[T]) -> ProtBuf<T, A> {
         unsafe {
-            ProtBuf::from_raw_buf(values.as_ptr(), values.len())
+            ProtBuf::from_raw_parts(values.as_ptr(), values.len())
         }
     }
 
     /// New buffer from unsafe buffer.
-    pub unsafe fn from_raw_buf(buf: *const T, length: usize) -> ProtBuf<T, A> {
+    pub unsafe fn from_raw_parts(buf: *const T, length: usize) -> ProtBuf<T, A> {
         assert!(!buf.is_null());
         let n = ProtBuf::with_length(length);
         ptr::copy_nonoverlapping_memory(n.ptr, buf, n.len);
@@ -441,7 +441,7 @@ mod test {
         assert_eq!(c.as_slice(), r.as_slice());
 
         let d: ProtBuf<i64, NullHeapAllocator> = unsafe {
-            ProtBuf::from_raw_buf(c.as_ptr(), c.len())
+            ProtBuf::from_raw_parts(c.as_ptr(), c.len())
         };
         assert_eq!(d.as_slice(), c.as_slice());
 
@@ -469,7 +469,7 @@ mod test {
         assert_eq!(c.as_slice(), r.as_slice());
 
         let d: ProtBuf<i64, ProtectedBufferAllocator> = unsafe {
-            ProtBuf::from_raw_buf(c.as_ptr(), c.len())
+            ProtBuf::from_raw_parts(c.as_ptr(), c.len())
         };
         assert_eq!(d.as_slice(), c.as_slice());
 
