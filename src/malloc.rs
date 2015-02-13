@@ -1512,9 +1512,9 @@ mod test {
             }
         }
 
-        assert!((super::thread_dir().dir.borrow().total -
-                 super::thread_dir().dir.borrow().cache_len) <=
-                super::thread_dir().dir.borrow().free + 1);
+        let d = super::thread_dir();
+        assert!((d.dir.borrow().total - d.dir.borrow().cache_len) <=
+                d.dir.borrow().free + 1);
     }
 
     #[test]
@@ -1547,8 +1547,8 @@ mod test {
             }
         }
 
-        assert_eq!(super::thread_dir().dir.borrow().total,
-                   super::thread_dir().dir.borrow().free);
+        let d = super::thread_dir();
+        assert_eq!(d.dir.borrow().total, d.dir.borrow().free);
     }
 
     #[test]
@@ -1580,8 +1580,8 @@ mod test {
             }
         }
 
-        assert_eq!(super::thread_dir().dir.borrow().total,
-                   super::thread_dir().dir.borrow().free);
+        let d = super::thread_dir();
+        assert_eq!(d.dir.borrow().total, d.dir.borrow().free);
     }
 
     #[test]
@@ -1644,9 +1644,9 @@ mod test {
 
         print_dir_state();
 
-        assert!((super::thread_dir().dir.borrow().total -
-                 super::thread_dir().dir.borrow().cache_len) <=
-                super::thread_dir().dir.borrow().free + 1);
+        let d = super::thread_dir();
+        assert!((d.dir.borrow().total - d.dir.borrow().cache_len) <=
+                d.dir.borrow().free + 1);
     }
 
     #[test]
@@ -1918,7 +1918,9 @@ mod test {
 
         let mut futures: Vec<_> =
             (0us..size).map(|_| Future::spawn(move || {
-                super::thread_dir().dir.borrow().dir as usize
+                let d1 = super::thread_dir();
+                let d2 = d1.dir.borrow();
+                d2.dir as usize
             })).collect();
 
         let addrs: HashSet<usize> =

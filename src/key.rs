@@ -56,8 +56,9 @@ const NOREAD: usize = 0;
 /// key.read_with(|k| encrypt(&k[..], b"abc"));
 ///
 /// // Access it in write-mode
-/// if let Some(mut key_write) = key.try_write() {
-///     key_write[16] = 42;
+/// let key_write = key.try_write();
+/// if let Some(mut kw) = key_write {
+///     kw[16] = 42;
 /// }
 /// # }
 /// ```
