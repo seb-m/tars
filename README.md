@@ -10,12 +10,12 @@ At a low level this project implements a [custom allocator](http://seb.dbzteam.o
 Two data containers are currently built on top of this allocator. They follow two common use cases where the first container [ProtBuf](http://seb.dbzteam.org/rs/tars/tars/struct.ProtBuf.html) is a fixed-length array that can be used as buffer to handle data used in sensitive operations like for instance internal buffers in crypto operations. The second container [ProtKey](http://seb.dbzteam.org/rs/tars/tars/struct.ProtKey.html) extending `ProtBuf` is more adapted for storing and handling more persistent data like secret keys requiring more fine-grained access control. When used with [its default allocator](http://seb.dbzteam.org/rs/tars/tars/allocator/struct.ProtectedBufferAllocator.html) `ProtBuf` is particularly well adapted for handling small data buffers by possibly grouping them together on a same memory page and by caching empty pages when all buffers are deallocated.
 
 
-### Known limitations
+### Limitations
 
 * It's not currently possible to be sure if the compiler/LLVM won't do something unexpected such as optimizing-out instructions, or generate intermediate variables with copy of protected data on the stack. There's actually a lot of moving parts: language, compiler, code generation, target architectures.
 * Experimental code, interfaces may change.
-* Only tested on OS X and Linux (`x86`, `x86_64`). Not compatible with Windows.
-* Slow allocations compared to general purpose allocators albeit more optimized than naive `mmap` pages allocations in cases where `ProtBuf` is used with its default allocator.
+* Only tested on OS X and Linux (`x86`, `x86_64`, `arm`). Not compatible with Windows.
+* Slow allocations compared to general purpose allocators albeit in some cases more optimized than just plain `mmap` pages allocations.
 
 
 ## Documentation

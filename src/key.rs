@@ -29,7 +29,6 @@ const NOREAD: usize = 0;
 /// wrapped in `RefCell`.
 ///
 /// ```rust
-/// #![allow(unstable)]
 /// # extern crate tars;
 /// # use tars::allocator::ProtectedKeyAllocator;
 /// # use tars::{ProtKey, ProtBuf, ProtKey8};
