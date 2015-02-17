@@ -133,15 +133,14 @@ pub unsafe fn allocate(size: usize, align: usize, fill: Option<u8>,
                             0);
     if object == MAP_FAILED {
         let errno = os::errno();
-        panic!("mmap failed: {} ({})", os::error_string(errno as usize), errno);
+        panic!("mmap failed: {} ({})", os::error_string(errno), errno);
     }
 
     // Use first and last pages as guarded pages.
     let mut rv = mman::mprotect(object, page_size() as size_t, PROT_NONE);
     if rv != 0 {
         let errno = os::errno();
-        panic!("mprotect failed: {} ({})",
-               os::error_string(errno as usize), errno);
+        panic!("mprotect failed: {} ({})", os::error_string(errno), errno);
     }
 
     let start = object as *mut u8;
@@ -152,8 +151,7 @@ pub unsafe fn allocate(size: usize, align: usize, fill: Option<u8>,
                         page_size() as size_t, PROT_NONE);
     if rv != 0 {
         let errno = os::errno();
-        panic!("mprotect failed: {} ({})",
-               os::error_string(errno as usize), errno);
+        panic!("mprotect failed: {} ({})", os::error_string(errno), errno);
     }
 
     let mut region = start.offset(page_size() as isize);
@@ -164,8 +162,7 @@ pub unsafe fn allocate(size: usize, align: usize, fill: Option<u8>,
         rv = mman::mlock(region as *const c_void, region_sz as size_t);
         if rv != 0 {
             let errno = os::errno();
-            panic!("mlock failed: {} ({})",
-                   os::error_string(errno as usize), errno);
+            panic!("mlock failed: {} ({})", os::error_string(errno), errno);
         }
     }
 
@@ -228,8 +225,7 @@ pub unsafe fn deallocate(ptr: *mut u8, size: usize, fill: Option<u8>) {
         let rv = mman::munlock(region as *const c_void, region_sz as size_t);
         if rv != 0 {
             let errno = os::errno();
-            panic!("munlock failed: {} ({})",
-                   os::error_string(errno as usize), errno);
+            panic!("munlock failed: {} ({})", os::error_string(errno), errno);
         }
     }
 
@@ -237,8 +233,7 @@ pub unsafe fn deallocate(ptr: *mut u8, size: usize, fill: Option<u8>) {
     let rv = mman::munmap(start as *mut c_void, full_sz as size_t);
     if rv != 0 {
         let errno = os::errno();
-        panic!("munmap failed: {} ({})",
-               os::error_string(errno as usize), errno);
+        panic!("munmap failed: {} ({})", os::error_string(errno), errno);
     }
 }
 
@@ -257,8 +252,7 @@ pub unsafe fn protect(ptr: *mut u8, size: usize, prot: Prot) {
                             Prot::to_mprot(prot));
     if rv != 0 {
         let errno = os::errno();
-        panic!("mprotect failed: {} ({})",
-               os::error_string(errno as usize), errno);
+        panic!("mprotect failed: {} ({})", os::error_string(errno), errno);
     }
 }
 
@@ -306,7 +300,7 @@ mod adv_imp {
             // flags in the kernel.
             if errno != EINVAL as usize {
                 panic!("madvise failed: {} ({})",
-                       os::error_string(errno as usize), errno);
+                       os::error_string(errno), errno);
             }
         }
     }
@@ -326,8 +320,7 @@ mod adv_imp {
                                 MADV_ZERO_WIRED_PAGES);
         if rv != 0 {
             let errno = os::errno();
-            panic!("madvise failed: {} ({})",
-                   os::error_string(errno as usize), errno);
+            panic!("madvise failed: {} ({})", os::error_string(errno), errno);
         }
     }
 }
@@ -362,8 +355,7 @@ mod inh_imp {
                                   inherit_none);
         if rv != 0 {
             let errno = os::errno();
-            panic!("minherit failed: {} ({})",
-                   os::error_string(errno as usize), errno);
+            panic!("minherit failed: {} ({})", os::error_string(errno), errno);
         }
     }
 }
