@@ -18,6 +18,7 @@
 #![feature(os)]
 #![feature(env)]
 #![feature(std_misc)]
+#![feature(int_uint)]
 
 #![cfg_attr(test, feature(test))]
 #![cfg_attr(test, feature(old_path))]
