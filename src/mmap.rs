@@ -298,7 +298,7 @@ mod adv_imp {
             // There should be an explicit way - other than relying on
             // kernel's version - to check for the availability of these
             // flags in the kernel.
-            if errno != EINVAL as usize {
+            if errno != EINVAL {
                 panic!("madvise failed: {} ({})",
                        os::error_string(errno), errno);
             }
