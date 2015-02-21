@@ -2,6 +2,7 @@
 //!
 use std::cell::{self, Cell, Ref, RefCell, RefMut, BorrowState};
 use std::fmt::{self, Debug};
+use std::marker::PhantomData;
 use std::num::Int;
 use std::ops::{Deref, DerefMut};
 use std::rc::Rc;
@@ -63,7 +64,8 @@ const NOREAD: usize = 0;
 /// ```
 pub struct ProtKey<T, A = DefaultKeyAllocator> {
     key: RefCell<ProtBuf<T, A>>,
-    read_ctr: Rc<Cell<usize>>
+    read_ctr: Rc<Cell<usize>>,
+    marker: PhantomData<A>
 }
 
 impl<T: Copy, A: KeyAllocator> ProtKey<T, A> {
@@ -77,7 +79,8 @@ impl<T: Copy, A: KeyAllocator> ProtKey<T, A> {
 
         ProtKey {
             key: RefCell::new(prot_buf),
-            read_ctr: Rc::new(Cell::new(NOREAD))
+            read_ctr: Rc::new(Cell::new(NOREAD)),
+            marker: PhantomData
         }
     }
 
@@ -179,7 +182,7 @@ impl<T: Debug + Copy, A: KeyAllocator> Debug for ProtKey<T, A> {
 /// This instance is the result of a `read` request on a `ProtKey`. If no
 /// other similar instance on the same `ProtKey` exists, raw memory access
 /// will be revoked when this instance is destructed.
-pub struct ProtKeyRead<'a, T: 'a, A> {
+pub struct ProtKeyRead<'a, T: 'a, A: 'a> {
     ref_key: Ref<'a, ProtBuf<T, A>>,
     read_ctr: Rc<Cell<usize>>
 }
@@ -253,7 +256,7 @@ impl<'a, T: Debug + Copy, A: KeyAllocator> Debug for ProtKeyRead<'a, T, A> {
 ///
 /// This instance is the result of a `write` request on a `ProtKey`. Its
 /// raw memory may only be written during the lifetime of this object.
-pub struct ProtKeyWrite<'a, T: 'a, A> {
+pub struct ProtKeyWrite<'a, T: 'a, A: 'a> {
     ref_key: RefMut<'a, ProtBuf<T, A>>,
 }
 
@@ -313,7 +316,7 @@ mod test {
         let key = ProtKey::new(s1);
 
         assert_eq!(&**key.read(), &*s2);
-        assert_eq!(&key.read()[..], &s2[]);
+        assert_eq!(&key.read()[..], &s2[..]);
         assert_eq!(*key.read(), s2);
 
         {

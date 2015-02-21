@@ -4,7 +4,7 @@ use alloc::heap;
 use std::fmt::{self, Debug, Formatter, LowerHex, UpperHex};
 use std::intrinsics;
 use std::iter::AdditiveIterator;
-use std::marker::Sync;
+use std::marker::{Sync, PhantomData};
 use std::mem;
 use std::num::{Int, FromPrimitive};
 use std::ops::{Deref, DerefMut, Index, IndexMut,
@@ -78,6 +78,7 @@ unsafe fn dealloc<A: Allocator, T>(ptr: *mut T, count: usize) {
 pub struct ProtBuf<T, A = DefaultBufferAllocator> {
     len: usize,
     ptr: *mut T,
+    marker: PhantomData<A>
 }
 
 impl<T, A> !Sync for ProtBuf<T, A> {
@@ -87,7 +88,8 @@ impl<T: Copy, A: Allocator> ProtBuf<T, A> {
     fn new_with_parts(ptr: *mut T, length: usize) -> ProtBuf<T, A> {
         ProtBuf {
             len: length,
-            ptr: ptr
+            ptr: ptr,
+            marker: PhantomData
         }
     }
 
