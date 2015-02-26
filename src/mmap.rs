@@ -187,8 +187,8 @@ pub unsafe fn allocate(size: usize, align: usize, fill: Option<u8>,
     }
 
     if let Some(fill_byte) = fill {
-        ptr::set_memory(start.offset(page_size() as isize),
-                        fill_byte, region_sz);
+        ptr::write_bytes(start.offset(page_size() as isize),
+                         fill_byte, region_sz);
     }
 
     region

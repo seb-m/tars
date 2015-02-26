@@ -125,7 +125,7 @@ impl<T: Copy, A: Allocator> ProtBuf<T, A> {
     pub fn new_zero(length: usize) -> ProtBuf<T, A> {
         let n = ProtBuf::with_length(length);
         unsafe {
-            ptr::zero_memory(n.ptr, length);
+            ptr::write_bytes(n.ptr, 0, length);
         }
         n
     }
@@ -161,7 +161,7 @@ impl<T: Copy, A: Allocator> ProtBuf<T, A> {
     pub unsafe fn from_raw_parts(buf: *const T, length: usize) -> ProtBuf<T, A> {
         assert!(!buf.is_null());
         let n = ProtBuf::with_length(length);
-        ptr::copy_nonoverlapping_memory(n.ptr, buf, n.len);
+        ptr::copy_nonoverlapping(n.ptr, buf, n.len);
         n
     }
 
@@ -173,8 +173,8 @@ impl<T: Copy, A: Allocator> ProtBuf<T, A> {
 
         unsafe {
             for it in items {
-                ptr::copy_nonoverlapping_memory(n.ptr.offset(idx),
-                                                it.as_ptr(), it.len());
+                ptr::copy_nonoverlapping(n.ptr.offset(idx), it.as_ptr(),
+                                         it.len());
                 idx += it.len() as isize;
             }
         }

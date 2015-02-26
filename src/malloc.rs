@@ -803,7 +803,7 @@ impl Dir {
         let slot = chunk.offset((slot_index * chunk_size) as isize);
 
         if let Some(fill_byte) = fill_byte_alloc(zero_fill) {
-            ptr::set_memory(slot, fill_byte, chunk_size);
+            ptr::write_bytes(slot, fill_byte, chunk_size);
         }
 
         slot
@@ -867,8 +867,8 @@ impl Dir {
             region.size
         };
 
-        ptr::copy_nonoverlapping_memory(nptr, ptr as *const u8,
-                                        cmp::min(size, prev_size));
+        ptr::copy_nonoverlapping(nptr, ptr as *const u8,
+                                 cmp::min(size, prev_size));
 
         self.dealloc(ptr);
         nptr
@@ -1948,8 +1948,7 @@ mod test {
             let d = heap::allocate(2 * env::page_size(), 0);
             assert!(!d.is_null());
 
-            ptr::copy_nonoverlapping_memory(d, s as *const u8,
-                                            2 * env::page_size());
+            ptr::copy_nonoverlapping(d, s as *const u8, 2 * env::page_size());
         }
     }
 
@@ -1971,8 +1970,7 @@ mod test {
             let d = heap::allocate(2 * env::page_size(), 0);
             assert!(!d.is_null());
 
-            ptr::copy_nonoverlapping_memory(d, s as *const u8,
-                                            2 * env::page_size());
+            ptr::copy_nonoverlapping(d, s as *const u8, 2 * env::page_size());
         }
     }
 
