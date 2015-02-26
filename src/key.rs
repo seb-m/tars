@@ -352,7 +352,7 @@ mod test {
             assert!(key.try_read().is_none());
         }
 
-        let mut c = 0us;
+        let mut c = 0_usize;
         key.write_with(|k| {k[42] = 42; c = 1;});
         assert_eq!(c, 1);
 

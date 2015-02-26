@@ -104,7 +104,7 @@ fn max_chunk_shift() -> usize {
 
 #[inline]
 fn max_chunk_size() -> usize {
-    1us << max_chunk_shift()
+    1_usize << max_chunk_shift()
 }
 
 #[inline]
@@ -419,7 +419,7 @@ impl Dir {
         if self.total != self.free {
             let canary_dir = self.canary2;
 
-            for i in 0us..self.total {
+            for i in 0_usize..self.total {
                 let region = self.region_at_index_mut(i);
 
                 // Do not do anything if region's integrity is broken.
@@ -455,7 +455,7 @@ impl Dir {
         self.regions = regions_alloc(count) as *mut Region;
 
         // Move regions.
-        for _ in 0us..prev_total {
+        for _ in 0_usize..prev_total {
             if !(*prev_regions).is_free() {
                 let new_index = self.region_pick((*prev_regions).object);
                 let new_region = self.region_at_index_mut(new_index) as
@@ -713,7 +713,7 @@ impl Dir {
                                chunk_size: usize) -> (usize, *mut u8) {
         let dir: *mut Dir = mem::transmute(self);
 
-        let chunk = if utils::rng().gen_range(0us, 2us) == 1 {
+        let chunk = if utils::rng().gen_range(0_usize, 2_usize) == 1 {
             (*dir).cache1
         } else {
             (*dir).cache2
@@ -770,7 +770,7 @@ impl Dir {
 
         let index = chunk_index(chunk_size);
         // Either take the first chunk or the last one.
-        let chunk = if utils::rng().gen_range(0us, 2us) == 1 {
+        let chunk = if utils::rng().gen_range(0_usize, 2_usize) == 1 {
             self.chunks1[index]
         } else {
             self.chunks2[index]
@@ -983,11 +983,11 @@ impl Debug for Dir {
         try!(write!(fmt, "Current state:\n"));
 
         assert!(!self.regions.is_null());
-        let mut num_free = 0us;
-        let mut num_chunk = 0us;
-        let mut num_large = 0us;
-        let mut num_cache = 0us;
-        for i in 0us..self.total {
+        let mut num_free = 0_usize;
+        let mut num_chunk = 0_usize;
+        let mut num_large = 0_usize;
+        let mut num_cache = 0_usize;
+        for i in 0_usize..self.total {
             let region = self.region_at_index(i);
 
             match region.kind {
@@ -1005,8 +1005,8 @@ impl Debug for Dir {
         try!(write!(fmt, "cached chunks: {}\n", num_cache));
 
         try!(write!(fmt, "chunks:\n"));
-        for i in iter::range_inclusive(0us, max_chunk_shift()) {
-            let size = 1us << i;
+        for i in iter::range_inclusive(0_usize, max_chunk_shift()) {
+            let size = 1_usize << i;
 
             if i != 0 && size < min_chunk_size() {
                 continue;
@@ -1066,8 +1066,8 @@ impl Debug for Stats {
         try!(write!(fmt, "larges_bytes: {}\n", self.larges_bytes));
         try!(write!(fmt, "chunks:       {}\n", self.chunks));
         try!(write!(fmt, "chunks sizes:\n"));
-        for i in iter::range_inclusive(0us, max_chunk_shift()) {
-            let size = 1us << i;
+        for i in iter::range_inclusive(0_usize, max_chunk_shift()) {
+            let size = 1_usize << i;
             if i != 0 && size < min_chunk_size() {
                 continue;
             }
@@ -1111,7 +1111,7 @@ impl Region {
 
         let max_index = max_slot_index(self.size);
 
-        for i in 0us..max_index >> 3 {
+        for i in 0_usize..max_index >> 3 {
             self.mapping[i] = 0xff;
         }
 
@@ -1119,7 +1119,7 @@ impl Region {
             self.mapping[max_index >> 3] = 0;
         }
 
-        for i in 0us..max_index % 8 {
+        for i in 0_usize..max_index % 8 {
             self.mapping[max_index >> 3] |= 1 << i;
         }
 
@@ -1182,13 +1182,13 @@ impl Region {
 
         let max_slot_index = max_slot_index(self.size);
 
-        for i in 0us..max_slot_index >> 3 {
+        for i in 0_usize..max_slot_index >> 3 {
             if self.mapping[i] != byte_val {
                 return false;
             }
         }
 
-        for i in 0us..max_slot_index % 8 {
+        for i in 0_usize..max_slot_index % 8 {
             let expected_val = if full {
                 0
             } else {
@@ -1222,10 +1222,10 @@ impl Region {
 
         let max_slot_index = max_slot_index(self.size);
         assert!(max_slot_index > 0);
-        let mut slot_index = utils::rng().gen_range(0us, max_slot_index);
+        let mut slot_index = utils::rng().gen_range(0_usize, max_slot_index);
 
         let mut found = false;
-        for _ in 0us..max_slot_index {
+        for _ in 0_usize..max_slot_index {
             if self.chunk_slot_is_free(slot_index) {
                 found = true;
                 break;
@@ -1291,7 +1291,7 @@ impl Debug for Region {
 
         if self.is_chunk() && self.size != 0 {
             try!(write!(fmt, "mapping:"));
-            for i in 0us..max_slot_index(self.size) {
+            for i in 0_usize..max_slot_index(self.size) {
                 if i % 8 == 0 {
                     try!(write!(fmt, " "));
                 }
@@ -1464,23 +1464,23 @@ mod test {
     fn test_malloc_chunks() {
         const NA: usize = 2048;
         let mut p: [*mut u8; NA] = [ptr::null_mut(); NA];
-        let mut s: [usize; NA] = [0us; NA];
+        let mut s: [usize; NA] = [0_usize; NA];
 
-        for i in 0us..NA {
+        for i in 0_usize..NA {
             p[i] = unsafe {
-                let size = thread_rng().gen_range(0us, env::page_size() >> 1);
+                let size = thread_rng().gen_range(0_usize, env::page_size() >> 1);
                 s[i] = size;
                 super::malloc(size, 0)
             };
             assert!(!p[i].is_null());
 
-            for j in 0us..s[i] {
+            for j in 0_usize..s[i] {
                 write_byte(p[i], j);
             }
         }
 
-        for i in iter::range_step(0us, NA, 16) {
-            for j in 0us..s[i] {
+        for i in iter::range_step(0_usize, NA, 16) {
+            for j in 0_usize..s[i] {
                 read_byte(p[i] as *const u8, j);
             }
 
@@ -1489,21 +1489,21 @@ mod test {
             }
         }
 
-        for i in iter::range_step(0us, NA, 16) {
+        for i in iter::range_step(0_usize, NA, 16) {
             p[i] = unsafe {
-                let size = thread_rng().gen_range(0us, env::page_size() >> 1);
+                let size = thread_rng().gen_range(0_usize, env::page_size() >> 1);
                 s[i] = size;
                 super::malloc(size, 0)
             };
             assert!(!p[i].is_null());
 
-            for j in 0us..s[i] {
+            for j in 0_usize..s[i] {
                 write_byte(p[i], j);
             }
         }
 
-        for i in 0us..NA {
-            for j in 0us..s[i] {
+        for i in 0_usize..NA {
+            for j in 0_usize..s[i] {
                 read_byte(p[i] as *const u8, j);
             }
 
@@ -1521,9 +1521,9 @@ mod test {
     fn test_malloc_large() {
         const NA: usize = 2048;
         let mut p: [*mut u8; NA] = [ptr::null_mut(); NA];
-        let mut s: [usize; NA] = [0us; NA];
+        let mut s: [usize; NA] = [0_usize; NA];
 
-        for i in 0us..NA {
+        for i in 0_usize..NA {
             p[i] = unsafe {
                 let size = thread_rng().gen_range((env::page_size() >> 1) + 1,
                                                   env::page_size() << 3);
@@ -1532,13 +1532,13 @@ mod test {
             };
             assert!(!p[i].is_null());
 
-            for j in 0us..s[i] {
+            for j in 0_usize..s[i] {
                 write_byte(p[i], j);
             }
         }
 
-        for i in 0us..NA {
-            for j in 0us..s[i] {
+        for i in 0_usize..NA {
+            for j in 0_usize..s[i] {
                 read_byte(p[i] as *const u8, j);
             }
 
@@ -1555,9 +1555,9 @@ mod test {
     fn test_malloc_keys() {
         const NA: usize = 2048;
         let mut p: [*mut u8; NA] = [ptr::null_mut(); NA];
-        let mut s: [usize; NA] = [0us; NA];
+        let mut s: [usize; NA] = [0_usize; NA];
 
-        for i in 0us..NA {
+        for i in 0_usize..NA {
             p[i] = unsafe {
                 let size = thread_rng().gen_range(0, env::page_size() << 3);
                 s[i] = size;
@@ -1565,13 +1565,13 @@ mod test {
             };
             assert!(!p[i].is_null());
 
-            for j in 0us..s[i] {
+            for j in 0_usize..s[i] {
                 write_byte(p[i], j);
             }
         }
 
-        for i in 0us..NA {
-            for j in 0us..s[i] {
+        for i in 0_usize..NA {
+            for j in 0_usize..s[i] {
                 read_byte(p[i] as *const u8, j);
             }
 
@@ -1588,25 +1588,25 @@ mod test {
     fn test_malloc_mixed() {
         const NA: usize = 8192;
         let mut p: [*mut u8; NA] = [ptr::null_mut(); NA];
-        let mut s: [usize; NA] = [0us; NA];
+        let mut s: [usize; NA] = [0_usize; NA];
 
-        for i in 0us..NA {
+        for i in 0_usize..NA {
             p[i] = unsafe {
-                let size = thread_rng().gen_range(0us, env::page_size() << 2);
+                let size = thread_rng().gen_range(0_usize, env::page_size() << 2);
                 s[i] = size;
                 super::malloc(size, 0)
             };
             assert!(!p[i].is_null());
 
-            for j in 0us..s[i] {
+            for j in 0_usize..s[i] {
                 write_byte(p[i], j);
             }
         }
 
         print_dir_state();
 
-        for i in iter::range_step(0us, NA, 16) {
-            for j in 0us..s[i] {
+        for i in iter::range_step(0_usize, NA, 16) {
+            for j in 0_usize..s[i] {
                 read_byte(p[i] as *const u8, j);
             }
 
@@ -1617,23 +1617,23 @@ mod test {
 
         print_dir_state();
 
-        for i in iter::range_step(0us, NA, 16) {
+        for i in iter::range_step(0_usize, NA, 16) {
             p[i] = unsafe {
-                let size = thread_rng().gen_range(0us, env::page_size() << 4);
+                let size = thread_rng().gen_range(0_usize, env::page_size() << 4);
                 s[i] = size;
                 super::malloc(size, 0)
             };
             assert!(!p[i].is_null());
 
-            for j in 0us..s[i] {
+            for j in 0_usize..s[i] {
                 write_byte(p[i], j);
             }
         }
 
         print_dir_state();
 
-        for i in 0us..NA {
-            for j in 0us..s[i] {
+        for i in 0_usize..NA {
+            for j in 0_usize..s[i] {
                 read_byte(p[i] as *const u8, j);
             }
 
@@ -1657,7 +1657,7 @@ mod test {
         let mut size;
 
         while align < env::page_size() {
-            size = thread_rng().gen_range(0us, env::page_size() << 2);
+            size = thread_rng().gen_range(0_usize, env::page_size() << 2);
 
             sptr = unsafe {
                 super::malloc(size, align)
@@ -1668,12 +1668,12 @@ mod test {
             assert!(!sptr.is_null() && !kptr.is_null());
             assert!(sptr as usize % align == 0 && kptr as usize % align == 0);
 
-            for i in 0us..size {
+            for i in 0_usize..size {
                 write_byte(sptr, i);
                 write_byte(kptr, i);
             }
 
-            for i in 0us..size {
+            for i in 0_usize..size {
                 read_byte(sptr as *const u8, i);
                 read_byte(kptr as *const u8, i);
             }
@@ -1815,8 +1815,8 @@ mod test {
 
     #[test]
     fn test_realloc() {
-        let size1 = thread_rng().gen_range(0us, env::page_size() << 2);
-        let size2 = thread_rng().gen_range(0us, env::page_size() << 2);
+        let size1 = thread_rng().gen_range(0_usize, env::page_size() << 2);
+        let size2 = thread_rng().gen_range(0_usize, env::page_size() << 2);
 
         unsafe {
             let mut p1 = super::malloc(size1, 0);
@@ -1824,7 +1824,7 @@ mod test {
             assert!(!p1.is_null());
             assert!(!p2.is_null());
 
-            for i in 0us..size1 {
+            for i in 0_usize..size1 {
                 write_byte(p1, i);
                 write_byte(p2, i);
             }
@@ -1834,7 +1834,7 @@ mod test {
             assert!(!p1.is_null());
             assert!(!p2.is_null());
 
-            for i in 0us..cmp::min(size1, size2) {
+            for i in 0_usize..cmp::min(size1, size2) {
                 read_byte(p1 as *const u8, i);
                 read_byte(p2 as *const u8, i);
             }
@@ -1845,7 +1845,7 @@ mod test {
                     write_byte(p2, i);
                 }
 
-                for i in 0us..size2 {
+                for i in 0_usize..size2 {
                     read_byte(p1 as *const u8, i);
                     read_byte(p2 as *const u8, i);
                 }
@@ -1858,13 +1858,13 @@ mod test {
 
     #[test]
     fn test_realloc_zero() {
-        let size = thread_rng().gen_range(0us, env::page_size() << 2);
+        let size = thread_rng().gen_range(0_usize, env::page_size() << 2);
 
         unsafe {
             let mut p1 = super::malloc(size, 0);
             assert!(!p1.is_null());
 
-            for i in 0us..size {
+            for i in 0_usize..size {
                 write_byte(p1, i);
             }
 
@@ -1888,7 +1888,7 @@ mod test {
             let mut p = super::calloc(1, env::page_size(), 0);
             assert!(!p.is_null());
 
-            for i in 0us..env::page_size() {
+            for i in 0_usize..env::page_size() {
                 assert_eq!(*p.offset(i as isize), 0);
             }
             super::free(p);
@@ -1897,7 +1897,7 @@ mod test {
             p = super::calloc(1, 42, 0);
             assert!(!p.is_null());
 
-            for i in 0us..42 {
+            for i in 0_usize..42 {
                 assert_eq!(*p.offset(i as isize), 0);
             }
             super::free(p);
@@ -1917,7 +1917,7 @@ mod test {
         let size = 10;
 
         let mut futures: Vec<_> =
-            (0us..size).map(|_| Future::spawn(move || {
+            (0_usize..size).map(|_| Future::spawn(move || {
                 let d1 = super::thread_dir();
                 let d2 = d1.dir.borrow();
                 d2.dir as usize
