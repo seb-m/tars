@@ -1931,7 +1931,7 @@ mod test {
     }
 
     #[test]
-    #[should_fail(message = "buffer ovverrun")]
+    #[should_fail(message = "buffer overrun")]
     fn test_overrun1() {
         // Not enabled by default because test runner is killed.
         let enabled = false;
@@ -1953,7 +1953,7 @@ mod test {
     }
 
     #[test]
-    #[should_fail(message = "buffer ovverrun")]
+    #[should_fail(message = "buffer overrun")]
     fn test_overrun2() {
         // Not enabled by default because test runner is killed.
         let enabled = false;
