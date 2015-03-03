@@ -1693,7 +1693,7 @@ mod test {
     }
 
     #[test]
-    #[should_fail(message = "double free")]
+    #[should_panic(message = "double free")]
     fn test_double_free_chunk1() {
         unsafe {
             let p1 = super::malloc(42, 0);
@@ -1706,7 +1706,7 @@ mod test {
     }
 
     #[test]
-    #[should_fail(message = "double free")]
+    #[should_panic(message = "double free")]
     fn test_double_free_chunk2() {
         unsafe {
             let p = super::malloc(42, 0);
@@ -1717,7 +1717,7 @@ mod test {
     }
 
     #[test]
-    #[should_fail(message = "invalid free")]
+    #[should_panic(message = "invalid free")]
     fn test_free_invalid1() {
         let p: *mut u8 = 42 as *mut u8;
         unsafe {
@@ -1726,7 +1726,7 @@ mod test {
     }
 
     #[test]
-    #[should_fail(message = "invalid pointer")]
+    #[should_panic(message = "invalid pointer")]
     fn test_free_invalid2() {
         unsafe {
             // Stored in a chunk of size 64.
@@ -1741,7 +1741,7 @@ mod test {
     }
 
     #[test]
-    #[should_fail(message = "invalid pointer")]
+    #[should_panic(message = "invalid pointer")]
     fn test_free_invalid3() {
         unsafe {
             let p = super::malloc(env::page_size(), 0);
@@ -1750,7 +1750,7 @@ mod test {
     }
 
     #[test]
-    #[should_fail(message = "invalid pointer")]
+    #[should_panic(message = "invalid pointer")]
     fn test_protect_chunk() {
         unsafe {
             let p = super::malloc(42, 0);
@@ -1760,7 +1760,7 @@ mod test {
     }
 
     #[test]
-    #[should_fail(message = "invalid pointer")]
+    #[should_panic(message = "invalid pointer")]
     fn test_protect_missing() {
         let p: *mut u8 = 42 as *mut u8;
 
@@ -1771,7 +1771,7 @@ mod test {
 
     #[test]
     fn test_protect() {
-        // Actually can't test access violations with #[should_fail]
+        // Actually can't test access violations with #[should_panic]
         // without killing the test runner.
 
         unsafe {
@@ -1804,7 +1804,7 @@ mod test {
     #[test]
     fn test_zero() {
         // Actually can't test dereferencing this pointer while expecting
-        // #[should_fail] without killing the test runner.
+        // #[should_panic] without killing the test runner.
 
         unsafe {
             let p = super::malloc(0, 0);
@@ -1905,7 +1905,7 @@ mod test {
     }
 
     #[test]
-    #[should_fail(message = "integer overflow")]
+    #[should_panic(message = "integer overflow")]
     fn test_calloc_overflow() {
         unsafe {
             super::calloc(usize::MAX, 2, 0);
@@ -1931,7 +1931,7 @@ mod test {
     }
 
     #[test]
-    #[should_fail(message = "buffer ovverrun")]
+    #[should_panic(message = "buffer ovverrun")]
     fn test_overrun1() {
         // Not enabled by default because test runner is killed.
         let enabled = false;
@@ -1953,7 +1953,7 @@ mod test {
     }
 
     #[test]
-    #[should_fail(message = "buffer ovverrun")]
+    #[should_panic(message = "buffer ovverrun")]
     fn test_overrun2() {
         // Not enabled by default because test runner is killed.
         let enabled = false;

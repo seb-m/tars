@@ -16,7 +16,7 @@
 #![feature(hash)]
 #![feature(alloc)]
 #![feature(os)]
-#![feature(env)]
+#![feature(page_size)]
 #![feature(std_misc)]
 
 #![cfg_attr(test, feature(test))]

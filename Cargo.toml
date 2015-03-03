@@ -10,6 +10,7 @@ readme = "README.md"
 description = """
 Data structure containers with protected memory
 """
+keywords = ["crypto", "security", "malloc"]
 
 [lib]
 name = "tars"
@@ -24,6 +25,6 @@ no_mlock = []
 malloc_stats = []
 
 [dependencies]
-log = "0.2.4"
+log = "0.2.5"
 libc = "0.1.2"
 rand = "0.1.3"
