@@ -94,7 +94,7 @@ const USE_STATS: bool = false;
 
 #[inline]
 fn page_shift() -> usize {
-    mmap::page_size().trailing_zeros()
+    mmap::page_size().trailing_zeros().to_usize().unwrap()
 }
 
 #[inline]
@@ -133,7 +133,7 @@ fn chunk_index(chunk_size: usize) -> usize {
         0 => 0,
         cs => {
             assert!(cs.is_power_of_two());
-            cs.trailing_zeros()
+            cs.trailing_zeros().to_usize().unwrap()
         }
     }
 }
@@ -500,7 +500,7 @@ impl Dir {
     fn region_at_index(&self, index: usize) -> &Region {
         assert!(index < self.total);
         unsafe {
-            &*self.regions.offset(index.to_int().unwrap())
+            &*self.regions.offset(index.to_isize().unwrap())
         }
     }
 
@@ -508,7 +508,7 @@ impl Dir {
     fn region_at_index_mut(&mut self, index: usize) -> &mut Region {
         assert!(index < self.total);
         unsafe {
-            &mut *self.regions.offset(index.to_int().unwrap())
+            &mut *self.regions.offset(index.to_isize().unwrap())
         }
     }
 
@@ -595,7 +595,7 @@ impl Dir {
 		    continue;
                 }
                 unsafe {
-                    *self.regions.offset(j.to_int().unwrap()) =
+                    *self.regions.offset(j.to_isize().unwrap()) =
                         *(region as *const Region);
                 }
                 break;
@@ -616,7 +616,7 @@ impl Dir {
             assert!(!end.is_null());
             region.next = *start;
             let first_region = self.regions.offset(self.region_find(
-                *start).unwrap().to_int().unwrap());
+                *start).unwrap().to_isize().unwrap());
             (*first_region).prev = region.object;
         }
 
@@ -628,14 +628,14 @@ impl Dir {
                           region: &mut Region) {
         let prev_region = if !region.prev.is_null() {
             self.regions.offset(self.region_find(region.prev).unwrap()
-                                .to_int().unwrap())
+                                .to_isize().unwrap())
         } else {
             ptr::null_mut()
         };
 
         let next_region = if !region.next.is_null() {
             self.regions.offset(self.region_find(region.next).unwrap()
-                                .to_int().unwrap())
+                                .to_isize().unwrap())
         } else {
             ptr::null_mut()
         };
@@ -662,7 +662,7 @@ impl Dir {
     unsafe fn free_chunk_insert(&mut self, region_index: usize) {
         let dir: *mut Dir = mem::transmute(self);
 
-        let region = (*dir).regions.offset(region_index.to_int().unwrap());
+        let region = (*dir).regions.offset(region_index.to_isize().unwrap());
         assert!((*region).is_chunk());
 
         let index = chunk_index((*region).size);
@@ -678,7 +678,7 @@ impl Dir {
     unsafe fn free_chunk_remove(&mut self, region_index: usize) {
         let dir: *mut Dir = mem::transmute(self);
 
-        let region = (*dir).regions.offset(region_index.to_int().unwrap());
+        let region = (*dir).regions.offset(region_index.to_isize().unwrap());
         assert!((*region).is_chunk() && (*region).size != 0);
 
         let index = chunk_index((*region).size);
@@ -699,7 +699,7 @@ impl Dir {
     unsafe fn cache_chunk_insert(&mut self, region_index: usize) {
         let dir: *mut Dir = mem::transmute(self);
 
-        let region = (*dir).regions.offset(region_index.to_int().unwrap());
+        let region = (*dir).regions.offset(region_index.to_isize().unwrap());
         assert!((*region).is_chunk() && (*region).size != 0);
 
         (*dir).list_insert(&mut (*dir).cache1, &mut (*dir).cache2,
@@ -721,7 +721,7 @@ impl Dir {
         assert!(!chunk.is_null());
 
         let region_index = (*dir).region_find(chunk).unwrap();
-        let region = (*dir).regions.offset(region_index.to_int().unwrap());
+        let region = (*dir).regions.offset(region_index.to_isize().unwrap());
         assert!((*region).check_integrity((*dir).canary2));
 
         (*dir).list_remove(&mut (*dir).cache1, &mut (*dir).cache2,
@@ -906,7 +906,7 @@ impl Dir {
         // Potentially signals a double free in case a region is not found.
         let region_index = self.region_find(ptr).unwrap();
 
-        let region = &mut *self.regions.offset(region_index.to_int().unwrap());
+        let region = &mut *self.regions.offset(region_index.to_isize().unwrap());
         assert!(region.check_integrity(self.canary2));
 
         match region.kind {
@@ -1448,13 +1448,13 @@ mod test {
 
     fn write_byte(ptr: *mut u8, index: usize) {
         unsafe {
-            *ptr.offset(index.to_int().unwrap()) = (index % 256) as u8;
+            *ptr.offset(index.to_isize().unwrap()) = (index % 256) as u8;
         }
     }
 
     fn read_byte(ptr: *const u8, index: usize) {
         unsafe {
-            assert_eq!(*ptr.offset(index.to_int().unwrap()),
+            assert_eq!(*ptr.offset(index.to_isize().unwrap()),
                        (index % 256) as u8);
         }
     }
@@ -1693,7 +1693,7 @@ mod test {
     }
 
     #[test]
-    #[should_panic(message = "double free")]
+    #[should_fail(message = "double free")]
     fn test_double_free_chunk1() {
         unsafe {
             let p1 = super::malloc(42, 0);
@@ -1706,7 +1706,7 @@ mod test {
     }
 
     #[test]
-    #[should_panic(message = "double free")]
+    #[should_fail(message = "double free")]
     fn test_double_free_chunk2() {
         unsafe {
             let p = super::malloc(42, 0);
@@ -1717,7 +1717,7 @@ mod test {
     }
 
     #[test]
-    #[should_panic(message = "invalid free")]
+    #[should_fail(message = "invalid free")]
     fn test_free_invalid1() {
         let p: *mut u8 = 42 as *mut u8;
         unsafe {
@@ -1726,7 +1726,7 @@ mod test {
     }
 
     #[test]
-    #[should_panic(message = "invalid pointer")]
+    #[should_fail(message = "invalid pointer")]
     fn test_free_invalid2() {
         unsafe {
             // Stored in a chunk of size 64.
@@ -1741,7 +1741,7 @@ mod test {
     }
 
     #[test]
-    #[should_panic(message = "invalid pointer")]
+    #[should_fail(message = "invalid pointer")]
     fn test_free_invalid3() {
         unsafe {
             let p = super::malloc(env::page_size(), 0);
@@ -1750,7 +1750,7 @@ mod test {
     }
 
     #[test]
-    #[should_panic(message = "invalid pointer")]
+    #[should_fail(message = "invalid pointer")]
     fn test_protect_chunk() {
         unsafe {
             let p = super::malloc(42, 0);
@@ -1760,7 +1760,7 @@ mod test {
     }
 
     #[test]
-    #[should_panic(message = "invalid pointer")]
+    #[should_fail(message = "invalid pointer")]
     fn test_protect_missing() {
         let p: *mut u8 = 42 as *mut u8;
 
@@ -1771,7 +1771,7 @@ mod test {
 
     #[test]
     fn test_protect() {
-        // Actually can't test access violations with #[should_panic]
+        // Actually can't test access violations with #[should_fail]
         // without killing the test runner.
 
         unsafe {
@@ -1804,7 +1804,7 @@ mod test {
     #[test]
     fn test_zero() {
         // Actually can't test dereferencing this pointer while expecting
-        // #[should_panic] without killing the test runner.
+        // #[should_fail] without killing the test runner.
 
         unsafe {
             let p = super::malloc(0, 0);
@@ -1905,7 +1905,7 @@ mod test {
     }
 
     #[test]
-    #[should_panic(message = "integer overflow")]
+    #[should_fail(message = "integer overflow")]
     fn test_calloc_overflow() {
         unsafe {
             super::calloc(usize::MAX, 2, 0);
@@ -1931,7 +1931,7 @@ mod test {
     }
 
     #[test]
-    #[should_panic(message = "buffer ovverrun")]
+    #[should_fail(message = "buffer ovverrun")]
     fn test_overrun1() {
         // Not enabled by default because test runner is killed.
         let enabled = false;
@@ -1953,7 +1953,7 @@ mod test {
     }
 
     #[test]
-    #[should_panic(message = "buffer ovverrun")]
+    #[should_fail(message = "buffer ovverrun")]
     fn test_overrun2() {
         // Not enabled by default because test runner is killed.
         let enabled = false;

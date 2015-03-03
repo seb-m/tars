@@ -145,8 +145,8 @@ pub unsafe fn allocate(size: usize, align: usize, fill: Option<u8>,
 
     let start = object as *mut u8;
 
-    let lp_offset = full_sz.to_int().unwrap().checked_sub(
-        page_size().to_int().unwrap()).unwrap();
+    let lp_offset = full_sz.to_isize().unwrap().checked_sub(
+        page_size().to_isize().unwrap()).unwrap();
     rv = mman::mprotect(start.offset(lp_offset) as *mut c_void,
                         page_size() as size_t, PROT_NONE);
     if rv != 0 {
@@ -178,7 +178,7 @@ pub unsafe fn allocate(size: usize, align: usize, fill: Option<u8>,
         },
         RangePos::Rand => {
             let r = (region_sz - size).checked_div(
-                align_sz).unwrap().to_int().unwrap();
+                align_sz).unwrap().to_isize().unwrap();
             let offset = utils::gen_range(&mut utils::rng(), 0, r) *
                 align_sz as isize;
             region = region.offset(offset);
