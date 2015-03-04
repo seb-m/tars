@@ -48,6 +48,7 @@ use std::hash::{self, SipHasher};
 use std::iter;
 use std::mem;
 use std::num::{Int, UnsignedInt, ToPrimitive};
+use std::num::wrapping::WrappingOps;
 use std::ops::{Deref, DerefMut};
 use std::ptr;
 use std::rc::Rc;
@@ -530,7 +531,7 @@ impl Dir {
             if self.region_at_index(index).is_free() {
                 break;
             }
-            index = (index - 1) & self.region_mask();
+            index = index.wrapping_sub(1) & self.region_mask();
         }
         index
     }
@@ -570,7 +571,7 @@ impl Dir {
                     return Some(index);
                 }
             }
-            index = (index - 1) & self.region_mask();
+            index = index.wrapping_sub(1) & self.region_mask();
         }
     }
 
@@ -584,7 +585,7 @@ impl Dir {
             let j = i;
 
             loop {
-                i = (i - 1) & self.region_mask();
+                i = i.wrapping_sub(1) & self.region_mask();
                 let region = self.region_at_index(i);
                 if region.is_free() {
                     break 'a;
@@ -1230,7 +1231,7 @@ impl Region {
                 found = true;
                 break;
             }
-            slot_index = (slot_index - 1) % max_slot_index;
+            slot_index = slot_index.wrapping_sub(1) % max_slot_index;
         }
         assert!(found);
 
