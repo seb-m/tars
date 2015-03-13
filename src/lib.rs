@@ -20,7 +20,6 @@
 #![feature(std_misc)]
 
 #![cfg_attr(test, feature(test))]
-#![cfg_attr(test, feature(old_path))]
 #![cfg_attr(test, feature(std_misc))]
 
 #[cfg(test)] extern crate test;

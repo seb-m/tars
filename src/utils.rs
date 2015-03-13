@@ -82,8 +82,6 @@ pub fn gen_range<R: Rng, T: PartialOrd + SampleRange>(rng: &mut R,
 
 #[cfg(test)]
 mod tests {
-    use std::old_path::BytesContainer;
-
     use rand::random;
 
 
@@ -104,10 +102,8 @@ mod tests {
 
         for _ in 0_usize..256 {
             let va: Vec<u8> = (0_usize..64).map(|_| random::<u8>()).collect();
-            let a = va.container_as_bytes();
             let vb: Vec<u8> = (0_usize..64).map(|_| random::<u8>()).collect();
-            let b = vb.container_as_bytes();
-            assert_eq!(super::bytes_eq(a, b), a == b);
+            assert_eq!(super::bytes_eq(&va, &vb), va == vb);
         }
     }
 }
