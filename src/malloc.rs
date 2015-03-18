@@ -47,7 +47,7 @@ use std::fmt::{self, Debug, Formatter};
 use std::hash::{self, SipHasher};
 use std::iter;
 use std::mem;
-use std::num::{Int, UnsignedInt, ToPrimitive};
+use std::num::{Int, ToPrimitive};
 use std::num::wrapping::WrappingOps;
 use std::ops::{Deref, DerefMut};
 use std::ptr;
@@ -1431,7 +1431,6 @@ mod test {
     use std::cmp;
     use std::collections::HashSet;
     use std::env;
-    use std::iter;
     use std::num::ToPrimitive;
     use std::ptr;
     use std::sync::Future;
@@ -1480,7 +1479,7 @@ mod test {
             }
         }
 
-        for i in iter::range_step(0_usize, NA, 16) {
+        for i in (0_usize..NA).step_by(16) {
             for j in 0_usize..s[i] {
                 read_byte(p[i] as *const u8, j);
             }
@@ -1490,7 +1489,7 @@ mod test {
             }
         }
 
-        for i in iter::range_step(0_usize, NA, 16) {
+        for i in (0_usize..NA).step_by(16) {
             p[i] = unsafe {
                 let size = thread_rng().gen_range(0_usize, env::page_size() >> 1);
                 s[i] = size;
@@ -1606,7 +1605,7 @@ mod test {
 
         print_dir_state();
 
-        for i in iter::range_step(0_usize, NA, 16) {
+        for i in (0_usize..NA).step_by(16) {
             for j in 0_usize..s[i] {
                 read_byte(p[i] as *const u8, j);
             }
@@ -1618,7 +1617,7 @@ mod test {
 
         print_dir_state();
 
-        for i in iter::range_step(0_usize, NA, 16) {
+        for i in (0_usize..NA).step_by(16) {
             p[i] = unsafe {
                 let size = thread_rng().gen_range(0_usize, env::page_size() << 4);
                 s[i] = size;

@@ -6,8 +6,8 @@ use libc::types::common::c95::c_void;
 use libc::types::os::arch::c95::{c_int, size_t};
 use std::cmp;
 use std::env;
-use std::num::{Int, UnsignedInt, ToPrimitive};
-use std::os;
+use std::io;
+use std::num::{Int, ToPrimitive};
 use std::ptr;
 use std::sync::{Once, ONCE_INIT};
 
@@ -132,15 +132,13 @@ pub unsafe fn allocate(size: usize, align: usize, fill: Option<u8>,
                             -1,
                             0);
     if object == MAP_FAILED {
-        let errno = os::errno();
-        panic!("mmap failed: {} ({})", os::error_string(errno), errno);
+        panic!("mmap failed: {}", io::Error::last_os_error());
     }
 
     // Use first and last pages as guarded pages.
     let mut rv = mman::mprotect(object, page_size() as size_t, PROT_NONE);
     if rv != 0 {
-        let errno = os::errno();
-        panic!("mprotect failed: {} ({})", os::error_string(errno), errno);
+        panic!("mprotect failed: {}", io::Error::last_os_error());
     }
 
     let start = object as *mut u8;
@@ -150,8 +148,7 @@ pub unsafe fn allocate(size: usize, align: usize, fill: Option<u8>,
     rv = mman::mprotect(start.offset(lp_offset) as *mut c_void,
                         page_size() as size_t, PROT_NONE);
     if rv != 0 {
-        let errno = os::errno();
-        panic!("mprotect failed: {} ({})", os::error_string(errno), errno);
+        panic!("mprotect failed: {}", io::Error::last_os_error());
     }
 
     let mut region = start.offset(page_size() as isize);
@@ -161,8 +158,7 @@ pub unsafe fn allocate(size: usize, align: usize, fill: Option<u8>,
         // Do not lock guarded pages.
         rv = mman::mlock(region as *const c_void, region_sz as size_t);
         if rv != 0 {
-            let errno = os::errno();
-            panic!("mlock failed: {} ({})", os::error_string(errno), errno);
+            panic!("mlock failed: {}", io::Error::last_os_error());
         }
     }
 
@@ -224,16 +220,14 @@ pub unsafe fn deallocate(ptr: *mut u8, size: usize, fill: Option<u8>) {
     if USE_MLOCK {
         let rv = mman::munlock(region as *const c_void, region_sz as size_t);
         if rv != 0 {
-            let errno = os::errno();
-            panic!("munlock failed: {} ({})", os::error_string(errno), errno);
+            panic!("munlock failed: {}", io::Error::last_os_error());
         }
     }
 
     let start = region.offset(-(page_size() as isize));
     let rv = mman::munmap(start as *mut c_void, full_sz as size_t);
     if rv != 0 {
-        let errno = os::errno();
-        panic!("munmap failed: {} ({})", os::error_string(errno), errno);
+        panic!("munmap failed: {}", io::Error::last_os_error());
     }
 }
 
@@ -251,8 +245,7 @@ pub unsafe fn protect(ptr: *mut u8, size: usize, prot: Prot) {
                             page_round(size) as size_t,
                             Prot::to_mprot(prot));
     if rv != 0 {
-        let errno = os::errno();
-        panic!("mprotect failed: {} ({})", os::error_string(errno), errno);
+        panic!("mprotect failed: {}", io::Error::last_os_error());
     }
 }
 
@@ -284,6 +277,7 @@ mod adv_imp {
     use libc::types::common::c95::c_void;
     use libc::types::os::arch::c95::{c_int, size_t};
     use std::os;
+    use std::sys;
 
 
     pub unsafe fn madvise(ptr: *mut u8, size: usize) {
@@ -291,7 +285,7 @@ mod adv_imp {
         let rv = bsd44::madvise(ptr as *mut c_void, size as size_t,
                                 dont_dump | MADV_DONTFORK);
         if rv != 0 {
-            let errno = os::errno();
+            let errno = os::errno(); //fixme
             // FIXME: EINVAL errors are currently ignored because
             // MADV_DONTDUMP and MADV_DONTFORK are not valid advices on
             // old kernels respectively Linux < 3.4 and Linux < 2.6.16.
@@ -299,8 +293,7 @@ mod adv_imp {
             // kernel's version - to check for the availability of these
             // flags in the kernel.
             if errno != EINVAL {
-                panic!("madvise failed: {} ({})",
-                       os::error_string(errno), errno);
+                panic!("madvise failed: {}",io::Error::last_os_error());
             }
         }
     }
@@ -312,15 +305,14 @@ mod adv_imp {
     use libc::types::common::c95::c_void;
     use libc::consts::os::bsd44::MADV_ZERO_WIRED_PAGES;
     use libc::types::os::arch::c95::size_t;
-    use std::os;
+    use std::io;
 
 
     pub unsafe fn madvise(ptr: *mut u8, size: usize) {
         let rv = bsd44::madvise(ptr as *mut c_void, size as size_t,
                                 MADV_ZERO_WIRED_PAGES);
         if rv != 0 {
-            let errno = os::errno();
-            panic!("madvise failed: {} ({})", os::error_string(errno), errno);
+            panic!("madvise failed: {}", io::Error::last_os_error());
         }
     }
 }
@@ -337,7 +329,7 @@ mod adv_imp {
 mod inh_imp {
     pub use libc::types::common::c95::c_void;
     pub use libc::types::os::arch::c95::{c_int, size_t};
-    use std::os;
+    use std::io;
 
 
     mod bsdext {
@@ -354,8 +346,7 @@ mod inh_imp {
         let rv = bsdext::minherit(ptr as *mut c_void, size as size_t,
                                   inherit_none);
         if rv != 0 {
-            let errno = os::errno();
-            panic!("minherit failed: {} ({})", os::error_string(errno), errno);
+            panic!("minherit failed: {}", io::Error::last_os_error());
         }
     }
 }
