@@ -276,8 +276,8 @@ mod adv_imp {
     use libc::funcs::bsd44;
     use libc::types::common::c95::c_void;
     use libc::types::os::arch::c95::{c_int, size_t};
+    use std::io;
     use std::os;
-    use std::sys;
 
 
     pub unsafe fn madvise(ptr: *mut u8, size: usize) {
@@ -293,7 +293,7 @@ mod adv_imp {
             // kernel's version - to check for the availability of these
             // flags in the kernel.
             if errno != EINVAL {
-                panic!("madvise failed: {}",io::Error::last_os_error());
+                panic!("madvise failed: {}", io::Error::last_os_error());
             }
         }
     }
