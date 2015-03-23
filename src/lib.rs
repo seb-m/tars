@@ -2,7 +2,7 @@
 //!
 //! Data structure containers with protected memory.
 //!
-//! Souce code [repository](https://github.com/seb-m/tars) on Github.
+//! [Repository](https://github.com/seb-m/tars) on Github.
 #![crate_name = "tars"]
 
 #![doc(html_logo_url = "http://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png",
