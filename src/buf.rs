@@ -75,7 +75,7 @@ unsafe fn dealloc<A: Allocator, T>(ptr: *mut T, count: usize) {
 ///      ProtBuf::new_rand_os(42).into_key();
 /// # }
 /// ```
-pub struct ProtBuf<T, A = DefaultBufferAllocator> {
+pub struct ProtBuf<T: Copy, A: Allocator = DefaultBufferAllocator> {
     len: usize,
     ptr: *mut T,
     marker: PhantomData<A>
@@ -286,21 +286,21 @@ impl<T: Copy, A: Allocator> Clone for ProtBuf<T, A> {
 impl<T: Copy, A: Allocator> Index<usize> for ProtBuf<T, A> {
     type Output = T;
 
-    fn index(&self, index: &usize) -> &T {
-        &self.as_slice()[*index]
+    fn index(&self, index: usize) -> &T {
+        &self.as_slice()[index]
     }
 }
 
 impl<T: Copy, A: Allocator> IndexMut<usize> for ProtBuf<T, A> {
-    fn index_mut(&mut self, index: &usize) -> &mut T {
-        &mut self.as_mut_slice()[*index]
+    fn index_mut(&mut self, index: usize) -> &mut T {
+        &mut self.as_mut_slice()[index]
     }
 }
 
 impl<T: Copy, A: Allocator> Index<Range<usize>> for ProtBuf<T, A> {
     type Output = [T];
 
-    fn index(&self, index: &Range<usize>) -> &[T] {
+    fn index(&self, index: Range<usize>) -> &[T] {
         self.index(index)
     }
 }
@@ -308,7 +308,7 @@ impl<T: Copy, A: Allocator> Index<Range<usize>> for ProtBuf<T, A> {
 impl<T: Copy, A: Allocator> Index<RangeTo<usize>> for ProtBuf<T, A> {
     type Output = [T];
 
-    fn index(&self, index: &RangeTo<usize>) -> &[T] {
+    fn index(&self, index: RangeTo<usize>) -> &[T] {
         self.index(index)
     }
 }
@@ -316,7 +316,7 @@ impl<T: Copy, A: Allocator> Index<RangeTo<usize>> for ProtBuf<T, A> {
 impl<T: Copy, A: Allocator> Index<RangeFrom<usize>> for ProtBuf<T, A> {
     type Output = [T];
 
-    fn index(&self, index: &RangeFrom<usize>) -> &[T] {
+    fn index(&self, index: RangeFrom<usize>) -> &[T] {
         self.index(index)
     }
 }
@@ -324,31 +324,31 @@ impl<T: Copy, A: Allocator> Index<RangeFrom<usize>> for ProtBuf<T, A> {
 impl<T: Copy, A: Allocator> Index<RangeFull> for ProtBuf<T, A> {
     type Output = [T];
 
-    fn index(&self, _index: &RangeFull) -> &[T] {
+    fn index(&self, _index: RangeFull) -> &[T] {
         self.as_slice()
     }
 }
 
 impl<T: Copy, A: Allocator> IndexMut<Range<usize>> for ProtBuf<T, A> {
-    fn index_mut(&mut self, index: &Range<usize>) -> &mut [T] {
+    fn index_mut(&mut self, index: Range<usize>) -> &mut [T] {
         self.index_mut(index)
     }
 }
 
 impl<T: Copy, A: Allocator> IndexMut<RangeTo<usize>> for ProtBuf<T, A> {
-    fn index_mut(&mut self, index: &RangeTo<usize>) -> &mut [T] {
+    fn index_mut(&mut self, index: RangeTo<usize>) -> &mut [T] {
         self.index_mut(index)
     }
 }
 
 impl<T: Copy, A: Allocator> IndexMut<RangeFrom<usize>> for ProtBuf<T, A> {
-    fn index_mut(&mut self, index: &RangeFrom<usize>) -> &mut [T] {
+    fn index_mut(&mut self, index: RangeFrom<usize>) -> &mut [T] {
         self.index_mut(index)
     }
 }
 
 impl<T: Copy, A: Allocator> IndexMut<RangeFull> for ProtBuf<T, A> {
-    fn index_mut(&mut self, _index: &RangeFull) -> &mut [T] {
+    fn index_mut(&mut self, _index: RangeFull) -> &mut [T] {
         self.as_mut_slice()
     }
 }

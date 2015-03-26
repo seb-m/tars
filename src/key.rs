@@ -62,7 +62,7 @@ const NOREAD: usize = 0;
 /// }
 /// # }
 /// ```
-pub struct ProtKey<T, A = DefaultKeyAllocator> {
+pub struct ProtKey<T: Copy, A: KeyAllocator = DefaultKeyAllocator> {
     key: RefCell<ProtBuf<T, A>>,
     read_ctr: Rc<Cell<usize>>,
     marker: PhantomData<A>
@@ -182,7 +182,7 @@ impl<T: Debug + Copy, A: KeyAllocator> Debug for ProtKey<T, A> {
 /// This instance is the result of a `read` request on a `ProtKey`. If no
 /// other similar instance on the same `ProtKey` exists, raw memory access
 /// will be revoked when this instance is destructed.
-pub struct ProtKeyRead<'a, T: 'a, A: 'a> {
+pub struct ProtKeyRead<'a, T: Copy + 'a, A: KeyAllocator + 'a> {
     ref_key: Ref<'a, ProtBuf<T, A>>,
     read_ctr: Rc<Cell<usize>>
 }
@@ -256,7 +256,7 @@ impl<'a, T: Debug + Copy, A: KeyAllocator> Debug for ProtKeyRead<'a, T, A> {
 ///
 /// This instance is the result of a `write` request on a `ProtKey`. Its
 /// raw memory may only be written during the lifetime of this object.
-pub struct ProtKeyWrite<'a, T: 'a, A: 'a> {
+pub struct ProtKeyWrite<'a, T: Copy + 'a, A: KeyAllocator + 'a> {
     ref_key: RefMut<'a, ProtBuf<T, A>>,
 }
 
