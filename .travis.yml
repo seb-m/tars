@@ -5,13 +5,12 @@ script:
 - cargo test --verbose --features no_mlock
 - cargo doc --verbose
 after_success: |
-  [ $TRAVIS_BRANCH = master ] &&
-  [ $TRAVIS_PULL_REQUEST = false ] &&
-  cargo doc &&
-  echo '<meta http-equiv=refresh content=0;url=tars/index.html>' > target/doc/index.html &&
-  sudo pip install ghp-import &&
-  ghp-import -n target/doc &&
-  git push -f https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG}.git gh-pages
+   [ $TRAVIS_BRANCH = master ] &&
+   [ $TRAVIS_PULL_REQUEST = false ] &&
+   echo '<meta http-equiv=refresh content=0;url=tars/index.html>' > target/doc/index.html &&
+   pip install ghp-import --user $USER &&
+   $HOME/.local/bin/ghp-import -n target/doc &&
+   git push -qf https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG}.git gh-pages
 env:
   global:
   - secure: TP3gWXUGMu55t17jyRb93iqzWaP+LRrTOQKFWcEf0MkKhzy7MRIpX4/tKomfQWy4+qiRkm89WHETIXUGQ/mMeQN9YQ6EWKDBSoR+GGB+4jsZQWknw0K89ox/0LbHnFt98e4ztY4q6U60c6gY559X7dkNhAretbxwZoe8SdOnaMQ=
