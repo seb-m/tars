@@ -1,19 +1,28 @@
 language: rust
 sudo: false
 script:
-  - cargo build --verbose
-  - cargo test --verbose --features no_mlock
-  - cargo doc --verbose
-  - mv target/doc doc
+- cargo build --verbose
+- cargo test --verbose --features no_mlock
+- cargo doc --verbose
+- mv target/doc doc
 after_script:
-  - curl http://www.rust-ci.org/artifacts/put?t=$RUSTCI_TOKEN | sh
+- curl http://www.rust-ci.org/artifacts/put?t=$RUSTCI_TOKEN | sh
+after_success: |
+  [ $TRAVIS_BRANCH = master ] &&
+  [ $TRAVIS_PULL_REQUEST = false ] &&
+  cargo doc &&
+  echo "<meta http-equiv=refresh content=0;url=`echo $TRAVIS_REPO_SLUG | cut -d '/' -f 2`/index.html>" > target/doc/index.html &&
+  sudo pip install ghp-import &&
+  ghp-import -n target/doc &&
+  git push -fq https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG}.git gh-pages
 env:
   global:
-    - secure: dtKO++RIcSJfrWGsfmyjN8eou5+UMqpuQXmyR1ZyswzYjN/W48ZSGwD05nXHOfoZ12pVy08/Ud8e08ZhHa3YPD6aoV3Zvm8rx+4rhQcJvHiQT4mwH5i5JGV2q9ah5trpxCmG3WkjVfnlNdibY8xf3EuFkr610OibaxDUZXVva3U=
+  - secure: dtKO++RIcSJfrWGsfmyjN8eou5+UMqpuQXmyR1ZyswzYjN/W48ZSGwD05nXHOfoZ12pVy08/Ud8e08ZhHa3YPD6aoV3Zvm8rx+4rhQcJvHiQT4mwH5i5JGV2q9ah5trpxCmG3WkjVfnlNdibY8xf3EuFkr610OibaxDUZXVva3U=
+  - secure: kVOPopXfjWjvgSCCFcgpWPG+gbcsiXTkSiCC2v+5tDVlxsor7nZBpx0X/+rDFyx/qF5jXm2EHMzd/oczJ/DN6cLK+uH/eaj36KZozDn2Uc4E5Ywp9Sif6hIVZKvoJaGplKXBjEsKViXQ23dIAJE4oE292CTaBD2w+OygeT6GCFA=
 notifications:
   email:
     on_success: change
     on_failure: change
 os:
-  - linux
-  - osx
+- linux
+- osx
