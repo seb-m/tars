@@ -19,6 +19,7 @@
 #![feature(std_misc)]
 #![feature(step_by)]
 #![feature(convert)]
+#![feature(io)]
 
 #![allow(trivial_casts)] // Fixme: temp
 
