@@ -277,7 +277,6 @@ mod adv_imp {
     use libc::types::common::c95::c_void;
     use libc::types::os::arch::c95::{c_int, size_t};
     use std::io;
-    use std::os;
 
 
     pub unsafe fn madvise(ptr: *mut u8, size: usize) {
@@ -285,15 +284,15 @@ mod adv_imp {
         let rv = bsd44::madvise(ptr as *mut c_void, size as size_t,
                                 dont_dump | MADV_DONTFORK);
         if rv != 0 {
-            let errno = os::errno(); //fixme
+            let err = io::Error::last_os_error();
             // FIXME: EINVAL errors are currently ignored because
             // MADV_DONTDUMP and MADV_DONTFORK are not valid advices on
             // old kernels respectively Linux < 3.4 and Linux < 2.6.16.
             // There should be an explicit way - other than relying on
             // kernel's version - to check for the availability of these
             // flags in the kernel.
-            if errno != EINVAL {
-                panic!("madvise failed: {}", io::Error::last_os_error());
+            if err.raw_os_error().unwrap() != EINVAL {
+                panic!("madvise failed: {}", err);
             }
         }
     }

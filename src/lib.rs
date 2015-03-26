@@ -19,7 +19,6 @@
 #![feature(std_misc)]
 #![feature(step_by)]
 #![feature(convert)]
-#![feature(os)] // Fixme: temp
 
 #![allow(trivial_casts)] // Fixme: temp
 
