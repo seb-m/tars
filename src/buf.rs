@@ -1,6 +1,7 @@
 //! Protected buffer
 //!
 use alloc::heap;
+use std::convert::AsRef;
 use std::fmt::{self, Debug, Formatter, LowerHex, UpperHex};
 use std::intrinsics;
 use std::iter::AdditiveIterator;
@@ -183,7 +184,7 @@ impl<T: Copy, A: Allocator> ProtBuf<T, A> {
 
     /// Build a new instance by concatenating `ProtBuf` `items` together.
     pub fn from_bufs(items: &[&ProtBuf<T, A>]) -> ProtBuf<T, A> {
-        let v: Vec<&[T]> = items.iter().map(|x| (*x).as_slice()).collect();
+        let v: Vec<&[T]> = items.iter().map(|x| (*x).as_ref()).collect();
         ProtBuf::from_slices(&v)
     }
 
@@ -228,9 +229,9 @@ impl<T: Copy, A: Allocator> ProtBuf<T, A> {
     }
 }
 
-impl<T: Copy, A: Allocator> AsSlice<T> for ProtBuf<T, A> {
+impl<T: Copy, A: Allocator> AsRef<[T]> for ProtBuf<T, A> {
     /// Return a slice into `self`.
-    fn as_slice(&self) -> &[T] {
+    fn as_ref(&self) -> &[T] {
         unsafe {
             mem::transmute(Slice {
                 data: self.ptr,
@@ -287,7 +288,7 @@ impl<T: Copy, A: Allocator> Index<usize> for ProtBuf<T, A> {
     type Output = T;
 
     fn index(&self, index: usize) -> &T {
-        &self.as_slice()[index]
+        &self.as_ref()[index]
     }
 }
 
@@ -325,7 +326,7 @@ impl<T: Copy, A: Allocator> Index<RangeFull> for ProtBuf<T, A> {
     type Output = [T];
 
     fn index(&self, _index: RangeFull) -> &[T] {
-        self.as_slice()
+        self.as_ref()
     }
 }
 
@@ -357,7 +358,7 @@ impl<T: Copy, A: Allocator> Deref for ProtBuf<T, A> {
     type Target = [T];
 
     fn deref(&self) -> &[T] {
-        self.as_slice()
+        self.as_ref()
     }
 }
 
@@ -378,7 +379,7 @@ impl<T: Copy, A: Allocator> Eq for ProtBuf<T, A> {
 
 impl<T: Debug + Copy, A: Allocator> Debug for ProtBuf<T, A> {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        self.as_slice().fmt(f)
+        self.as_ref().fmt(f)
     }
 }
 
@@ -419,7 +420,7 @@ mod test {
         let mut s: [u8; 256] = [0; 256];
 
         let a: ProtBuf<i64, NullHeapAllocator> = ProtBuf::new_zero(256);
-        assert_eq!(a.as_slice(), r.as_slice());
+        assert_eq!(a.as_ref(), r.as_ref());
 
         for i in 0_usize..256 {
             r[i] = i as i64;
@@ -427,15 +428,15 @@ mod test {
         }
 
         let b: ProtBuf<i64, NullHeapAllocator> = ProtBuf::from_bytes(&s);
-        assert_eq!(b.as_slice(), r.as_slice());
+        assert_eq!(b.as_ref(), r.as_ref());
 
         let c: ProtBuf<i64, NullHeapAllocator> = ProtBuf::from_slice(&r);
-        assert_eq!(c.as_slice(), r.as_slice());
+        assert_eq!(c.as_ref(), r.as_ref());
 
         let d: ProtBuf<i64, NullHeapAllocator> = unsafe {
             ProtBuf::from_raw_parts(c.as_ptr(), c.len())
         };
-        assert_eq!(d.as_slice(), c.as_slice());
+        assert_eq!(d.as_ref(), c.as_ref());
 
         let e: ProtBuf<i64, NullHeapAllocator> = ProtBuf::from_slice(&r);
         assert_eq!(d, e);
@@ -447,7 +448,7 @@ mod test {
         let mut s: [u8; 256] = [0; 256];
 
         let a: ProtBuf<i64, ProtectedBufferAllocator> = ProtBuf::new_zero(256);
-        assert_eq!(a.as_slice(), r.as_slice());
+        assert_eq!(a.as_ref(), r.as_ref());
 
         for i in 0_usize..256 {
             r[i] = i as i64;
@@ -455,15 +456,15 @@ mod test {
         }
 
         let b: ProtBuf<i64, ProtectedBufferAllocator> = ProtBuf::from_bytes(&s);
-        assert_eq!(b.as_slice(), r.as_slice());
+        assert_eq!(b.as_ref(), r.as_ref());
 
         let c: ProtBuf<i64, NullHeapAllocator> = ProtBuf::from_slice(&r);
-        assert_eq!(c.as_slice(), r.as_slice());
+        assert_eq!(c.as_ref(), r.as_ref());
 
         let d: ProtBuf<i64, ProtectedBufferAllocator> = unsafe {
             ProtBuf::from_raw_parts(c.as_ptr(), c.len())
         };
-        assert_eq!(d.as_slice(), c.as_slice());
+        assert_eq!(d.as_ref(), c.as_ref());
 
         let e: ProtBuf<i64, ProtectedBufferAllocator> = ProtBuf::from_slice(&r);
         assert_eq!(d, e);

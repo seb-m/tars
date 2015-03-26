@@ -233,8 +233,8 @@ impl<'a, T: Copy, A: KeyAllocator> Deref for ProtKeyRead<'a, T, A> {
     }
 }
 
-impl<'a, T: Copy, A: KeyAllocator> AsSlice<T> for ProtKeyRead<'a, T, A> {
-    fn as_slice(&self) -> &[T] {
+impl<'a, T: Copy, A: KeyAllocator> AsRef<[T]> for ProtKeyRead<'a, T, A> {
+    fn as_ref(&self) -> &[T] {
         &***self
     }
 }

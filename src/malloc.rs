@@ -2006,7 +2006,7 @@ mod test {
     fn benck_libc_42_alloc(b: &mut Bencher) {
          b.iter(|| {
             unsafe {
-                let p = libc::malloc(42 as libc::size_t) as *mut u8;
+                let p = libc::malloc(42) as *mut u8;
                 libc::free(p as *mut libc::c_void);
             }
         })

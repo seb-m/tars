@@ -18,6 +18,9 @@
 #![feature(page_size)]
 #![feature(std_misc)]
 #![feature(step_by)]
+#![feature(convert)]
+
+#![allow(trivial_casts)] //Fixme
 
 #![cfg_attr(test, feature(test))]
 #![cfg_attr(test, feature(std_misc))]
