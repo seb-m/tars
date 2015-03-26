@@ -6,7 +6,7 @@ script:
 - cargo doc --verbose
 - cp -R target/doc doc
 after_success: |
-  curl http://www.rust-ci.org/artifacts/put?t=$RUSTCI_TOKEN | sh &&
+#  curl http://www.rust-ci.org/artifacts/put?t=$RUSTCI_TOKEN | sh &&
   [ $TRAVIS_BRANCH = master ] &&
   [ $TRAVIS_PULL_REQUEST = false ] &&
   cargo doc &&
