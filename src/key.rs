@@ -289,7 +289,7 @@ impl<'a, T: Copy, A: KeyAllocator> Deref for ProtKeyWrite<'a, T, A> {
     type Target = ProtBuf<T, A>;
 
     fn deref(&self) -> &ProtBuf<T, A> {
-        panic!("key must only be written");
+        unreachable!("key must only be written");
         &*self.ref_key
     }
 }

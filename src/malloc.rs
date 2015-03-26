@@ -124,7 +124,7 @@ fn chunk_size(size: usize) -> usize {
         0 => 0,
         sz if sz <= min_chunk_size() => min_chunk_size(),
         sz if sz <= max_chunk_size() => sz.next_power_of_two(),
-        _ => panic!()
+        _ => unreachable!()
     }
 }
 
@@ -946,7 +946,7 @@ impl Dir {
                 region.dealloc_data(false);
                 self.region_delete(region_index);
             },
-            _ => panic!()
+            _ => unreachable!()
         }
     }
 
@@ -1274,7 +1274,7 @@ impl Region {
             RegionType::Cache => {
                 mmap::deallocate(self.object, mmap::page_size(), None);
             },
-            _ => panic!()
+            _ => unreachable!()
         }
 
         self.set_as_free();
