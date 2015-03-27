@@ -21,7 +21,8 @@
 #![feature(convert)]
 #![cfg_attr(any(target_os = "linux", target_os = "android"), feature(io))]
 
-#![allow(trivial_casts)] // Fixme: temp
+// Fixme: temp, see https://github.com/rust-lang/rust/issues/23542
+#![allow(trivial_casts)]
 
 #![cfg_attr(test, feature(test))]
 #![cfg_attr(test, feature(std_misc))]

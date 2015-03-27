@@ -2,7 +2,6 @@
 //!
 use std::cell::{self, Cell, Ref, RefCell, RefMut, BorrowState};
 use std::fmt::{self, Debug};
-use std::marker::PhantomData;
 use std::num::Int;
 use std::ops::{Deref, DerefMut};
 use std::rc::Rc;
@@ -64,8 +63,7 @@ const NOREAD: usize = 0;
 /// ```
 pub struct ProtKey<T: Copy, A: KeyAllocator = DefaultKeyAllocator> {
     key: RefCell<ProtBuf<T, A>>,
-    read_ctr: Rc<Cell<usize>>,
-    marker: PhantomData<A>
+    read_ctr: Rc<Cell<usize>>
 }
 
 impl<T: Copy, A: KeyAllocator> ProtKey<T, A> {
@@ -79,8 +77,7 @@ impl<T: Copy, A: KeyAllocator> ProtKey<T, A> {
 
         ProtKey {
             key: RefCell::new(prot_buf),
-            read_ctr: Rc::new(Cell::new(NOREAD)),
-            marker: PhantomData
+            read_ctr: Rc::new(Cell::new(NOREAD))
         }
     }
 

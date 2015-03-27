@@ -3,13 +3,13 @@
 //! Provide a common interface for memory allocation in protected
 //! containers `ProtBuf` and `ProtKey`.
 use alloc::heap;
-use std::marker::PhantomFn;
+use std::marker::MarkerTrait;
 
 use malloc;
 
 
 /// Base trait for memory allocators
-pub trait Allocator : PhantomFn<Self> {
+pub trait Allocator : MarkerTrait {
     /// Allocate `size` bytes of memory whose base address is a multiple
     /// of `align`.
     unsafe fn allocate(size: usize, align: usize) -> *mut u8;
