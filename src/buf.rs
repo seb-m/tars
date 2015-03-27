@@ -10,8 +10,8 @@ use std::mem;
 use std::num::{Int, FromPrimitive};
 use std::ops::{Deref, DerefMut, Index, IndexMut,
                Range, RangeTo, RangeFrom, RangeFull};
-use std::ptr;
-use std::raw::Slice;
+use std::ptr::{self, Unique};
+use std::slice;
 
 use rand::Rng;
 
@@ -78,7 +78,7 @@ unsafe fn dealloc<A: Allocator, T>(ptr: *mut T, count: usize) {
 /// ```
 pub struct ProtBuf<T: Copy, A: Allocator = DefaultBufferAllocator> {
     len: usize,
-    ptr: *mut T,
+    ptr: Unique<T>,
     marker: PhantomData<A>
 }
 
@@ -86,10 +86,10 @@ impl<T, A> !Sync for ProtBuf<T, A> {
 }
 
 impl<T: Copy, A: Allocator> ProtBuf<T, A> {
-    fn new_with_parts(ptr: *mut T, length: usize) -> ProtBuf<T, A> {
+    unsafe fn new_with_parts(ptr: *mut T, length: usize) -> ProtBuf<T, A> {
         ProtBuf {
             len: length,
-            ptr: ptr,
+            ptr: Unique::new(ptr),
             marker: PhantomData
         }
     }
@@ -107,13 +107,17 @@ impl<T: Copy, A: Allocator> ProtBuf<T, A> {
 
     fn with_length(length: usize) -> ProtBuf<T, A> {
         if mem::size_of::<T>() == 0 || length == 0 {
-            return ProtBuf::new_with_parts(heap::EMPTY as *mut T, 0);
+            unsafe {
+                ProtBuf::new_with_parts(heap::EMPTY as *mut T, 0)
+            }
+        } else {
+            let ptr = unsafe {
+                alloc::<A, T>(length)
+            };
+            unsafe {
+                ProtBuf::new_with_parts(ptr, length)
+            }
         }
-
-        let ptr = unsafe {
-            alloc::<A, T>(length)
-        };
-        ProtBuf::new_with_parts(ptr, length)
     }
 
     /// New allocated buffer with unitilialized memory.
@@ -126,7 +130,7 @@ impl<T: Copy, A: Allocator> ProtBuf<T, A> {
     pub fn new_zero(length: usize) -> ProtBuf<T, A> {
         let n = ProtBuf::with_length(length);
         unsafe {
-            ptr::write_bytes(n.ptr, 0, length);
+            ptr::write_bytes(*n.ptr, 0, length);
         }
         n
     }
@@ -136,10 +140,8 @@ impl<T: Copy, A: Allocator> ProtBuf<T, A> {
     pub fn new_rand<R: Rng>(length: usize, rng: &mut R) -> ProtBuf<T, A> {
         let mut n = ProtBuf::with_length(length);
         rng.fill_bytes(unsafe {
-            mem::transmute(Slice {
-                data: n.as_mut_ptr() as *const u8,
-                len: n.len_bytes()
-            })
+            slice::from_raw_parts_mut(n.as_mut_ptr() as *mut u8,
+                                      n.len_bytes())
         });
         n
     }
@@ -159,10 +161,11 @@ impl<T: Copy, A: Allocator> ProtBuf<T, A> {
     }
 
     /// New buffer from unsafe buffer.
-    pub unsafe fn from_raw_parts(buf: *const T, length: usize) -> ProtBuf<T, A> {
+    pub unsafe fn from_raw_parts(buf: *const T,
+                                 length: usize) -> ProtBuf<T, A> {
         assert!(!buf.is_null());
         let n = ProtBuf::with_length(length);
-        ptr::copy_nonoverlapping(n.ptr, buf, n.len);
+        ptr::copy_nonoverlapping(*n.ptr, buf, n.len);
         n
     }
 
@@ -191,10 +194,7 @@ impl<T: Copy, A: Allocator> ProtBuf<T, A> {
     /// Return a mutable slice into `self`.
     pub fn as_mut_slice(&mut self) -> &mut [T] {
         unsafe {
-            mem::transmute(Slice {
-                data: self.ptr as *const T,
-                len: self.len
-            })
+            slice::from_raw_parts_mut(*self.ptr, self.len)
         }
     }
 
@@ -206,10 +206,8 @@ impl<T: Copy, A: Allocator> ProtBuf<T, A> {
         assert!(bytes_size > 0 && dst_type_size > 0 &&
                 bytes_size >= dst_type_size && bytes_size % dst_type_size == 0);
         unsafe {
-            mem::transmute(Slice {
-                data: self.ptr as *const U,
-                len: bytes_size.checked_div(dst_type_size).unwrap()
-            })
+            let len = bytes_size.checked_div(dst_type_size).unwrap();
+            slice::from_raw_parts(*self.ptr as *const U, len)
         }
     }
 
@@ -221,10 +219,8 @@ impl<T: Copy, A: Allocator> ProtBuf<T, A> {
         assert!(bytes_size > 0 && dst_type_size > 0 &&
                 bytes_size >= dst_type_size && bytes_size % dst_type_size == 0);
         unsafe {
-            mem::transmute(Slice {
-                data: self.ptr as *const U,
-                len: bytes_size.checked_div(dst_type_size).unwrap()
-            })
+            let len = bytes_size.checked_div(dst_type_size).unwrap();
+            slice::from_raw_parts_mut(*self.ptr as *mut U, len)
         }
     }
 }
@@ -233,10 +229,7 @@ impl<T: Copy, A: Allocator> AsRef<[T]> for ProtBuf<T, A> {
     /// Return a slice into `self`.
     fn as_ref(&self) -> &[T] {
         unsafe {
-            mem::transmute(Slice {
-                data: self.ptr,
-                len: self.len
-            })
+            slice::from_raw_parts_mut(*self.ptr, self.len)
         }
     }
 }
@@ -272,7 +265,7 @@ impl<T: Copy, A: Allocator> Drop for ProtBuf<T, A> {
                 // issue to use ptr::read() as it could copy memory slots
                 // to temporary objects.
                 assert!(!intrinsics::needs_drop::<T>());
-                dealloc::<A, T>(self.ptr, self.len)
+                dealloc::<A, T>(*self.ptr, self.len)
             }
         }
     }

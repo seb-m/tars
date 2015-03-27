@@ -19,6 +19,7 @@
 #![feature(std_misc)]
 #![feature(step_by)]
 #![feature(convert)]
+#![feature(unique)]
 #![cfg_attr(any(target_os = "linux", target_os = "android"), feature(io))]
 
 // Fixme: temp, see https://github.com/rust-lang/rust/issues/23542
