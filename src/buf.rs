@@ -165,7 +165,7 @@ impl<T: Copy, A: Allocator> ProtBuf<T, A> {
                                  length: usize) -> ProtBuf<T, A> {
         assert!(!buf.is_null());
         let n = ProtBuf::with_length(length);
-        ptr::copy_nonoverlapping(*n.ptr, buf, n.len);
+        ptr::copy_nonoverlapping(buf, *n.ptr, n.len);
         n
     }
 
@@ -177,7 +177,7 @@ impl<T: Copy, A: Allocator> ProtBuf<T, A> {
 
         unsafe {
             for it in items {
-                ptr::copy_nonoverlapping(n.ptr.offset(idx), it.as_ptr(),
+                ptr::copy_nonoverlapping(it.as_ptr(), n.ptr.offset(idx),
                                          it.len());
                 idx += it.len() as isize;
             }

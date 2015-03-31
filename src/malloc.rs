@@ -868,7 +868,7 @@ impl Dir {
             region.size
         };
 
-        ptr::copy_nonoverlapping(nptr, ptr as *const u8,
+        ptr::copy_nonoverlapping(ptr as *const u8, nptr,
                                  cmp::min(size, prev_size));
 
         self.dealloc(ptr);
@@ -1948,7 +1948,7 @@ mod test {
             let d = heap::allocate(2 * env::page_size(), 0);
             assert!(!d.is_null());
 
-            ptr::copy_nonoverlapping(d, s as *const u8, 2 * env::page_size());
+            ptr::copy_nonoverlapping(s as *const u8, d, 2 * env::page_size());
         }
     }
 
@@ -1970,7 +1970,7 @@ mod test {
             let d = heap::allocate(2 * env::page_size(), 0);
             assert!(!d.is_null());
 
-            ptr::copy_nonoverlapping(d, s as *const u8, 2 * env::page_size());
+            ptr::copy_nonoverlapping(s as *const u8, d, 2 * env::page_size());
         }
     }
 
