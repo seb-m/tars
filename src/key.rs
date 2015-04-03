@@ -2,7 +2,6 @@
 //!
 use std::cell::{self, Cell, Ref, RefCell, RefMut, BorrowState};
 use std::fmt::{self, Debug};
-use std::num::Int;
 use std::ops::{Deref, DerefMut};
 use std::rc::Rc;
 

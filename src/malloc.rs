@@ -47,8 +47,7 @@ use std::fmt::{self, Debug, Formatter};
 use std::hash::{self, SipHasher};
 use std::iter;
 use std::mem;
-use std::num::{Int, ToPrimitive};
-use std::num::wrapping::WrappingOps;
+use std::num::ToPrimitive;
 use std::ops::{Deref, DerefMut};
 use std::ptr;
 use std::rc::Rc;
@@ -335,7 +334,7 @@ struct Stats {
     prot_nones: usize
 }
 
-#[derive(Copy)]
+#[derive(Copy, Clone)]
 enum RegionType {
     // Region is free, no object attached.
     Free = 0,
@@ -377,6 +376,12 @@ struct Region {
 
 // A bit countertuitive but it happens that regions are shallowly copied.
 impl Copy for Region {}
+
+impl Clone for Region {
+    fn clone(&self) -> Region {
+        *self
+    }
+}
 
 
 impl Dir {

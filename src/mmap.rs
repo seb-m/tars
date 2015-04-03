@@ -7,7 +7,7 @@ use libc::types::os::arch::c95::{c_int, size_t};
 use std::cmp;
 use std::env;
 use std::io;
-use std::num::{Int, ToPrimitive};
+use std::num::ToPrimitive;
 use std::ptr;
 use std::sync::{Once, ONCE_INIT};
 
@@ -60,7 +60,7 @@ fn page_round(size: usize) -> usize {
 
 /// Hint at how the buffer should be positionned in the allocated
 /// region.
-#[derive(Copy)]
+#[derive(Copy, Clone)]
 pub enum RangePos {
     Start,
     End,
@@ -70,7 +70,7 @@ pub enum RangePos {
 
 /// Memory protection flags. `None` means no `Read` and no `Write`
 /// allowed.
-#[derive(Copy)]
+#[derive(Copy, Clone)]
 pub enum Prot {
     None,
     Read,

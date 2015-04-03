@@ -7,7 +7,7 @@ use std::intrinsics;
 use std::iter::AdditiveIterator;
 use std::marker::{Sync, PhantomData};
 use std::mem;
-use std::num::{Int, FromPrimitive};
+use std::num::FromPrimitive;
 use std::ops::{Deref, DerefMut, Index, IndexMut,
                Range, RangeTo, RangeFrom, RangeFull};
 use std::ptr::{self, Unique};

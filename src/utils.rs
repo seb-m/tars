@@ -1,7 +1,6 @@
 //! Utilities
 use std::intrinsics;
 use std::mem;
-use std::num::Int;
 
 use rand::{self, Rng, ThreadRng};
 use rand::distributions::range::SampleRange;
