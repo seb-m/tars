@@ -222,7 +222,6 @@ struct LocalDir {
     dir: *mut Dir
 }
 
-#[unsafe_destructor]
 impl Drop for LocalDir {
     fn drop(&mut self) {
         unsafe {

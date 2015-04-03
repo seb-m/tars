@@ -10,7 +10,6 @@
        html_root_url = "http://doc.rust-lang.org/")]
 
 #![deny(stable_features)]
-#![feature(unsafe_destructor)]
 #![feature(optin_builtin_traits)]
 #![feature(core)]
 #![feature(hash)]

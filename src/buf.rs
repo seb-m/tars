@@ -254,7 +254,6 @@ impl<T: FromPrimitive + Copy, A: Allocator> ProtBuf<T, A> {
     }
 }
 
-#[unsafe_destructor]
 impl<T: Copy, A: Allocator> Drop for ProtBuf<T, A> {
     fn drop(&mut self) {
         if self.len != 0 && !self.ptr.is_null() && mem::size_of::<T>() != 0 {

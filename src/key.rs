@@ -140,7 +140,6 @@ impl<T: Copy, A: KeyAllocator> ProtKey<T, A> {
     }
 }
 
-#[unsafe_destructor]
 impl<T: Copy, A: KeyAllocator> Drop for ProtKey<T, A> {
     fn drop(&mut self) {
         // FIXME: without this assert this drop is useless.
@@ -207,7 +206,6 @@ impl<'a, T: Copy, A: KeyAllocator> ProtKeyRead<'a, T, A> {
     }
 }
 
-#[unsafe_destructor]
 impl<'a, T: Copy, A: KeyAllocator> Drop for ProtKeyRead<'a, T, A> {
     fn drop(&mut self) {
         self.read_ctr.set(self.read_ctr.get().checked_sub(1).unwrap());
@@ -268,7 +266,6 @@ impl<'a, T: Copy, A: KeyAllocator> ProtKeyWrite<'a, T, A> {
     }
 }
 
-#[unsafe_destructor]
 impl<'a, T: Copy, A: KeyAllocator> Drop for ProtKeyWrite<'a, T, A> {
     fn drop(&mut self) {
         unsafe {
