@@ -4,7 +4,6 @@ use alloc::heap;
 use std::convert::AsRef;
 use std::fmt::{self, Debug, Formatter, LowerHex, UpperHex};
 use std::intrinsics;
-use std::iter::AdditiveIterator;
 use std::marker::{Sync, PhantomData};
 use std::mem;
 use std::num::FromPrimitive;
