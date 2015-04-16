@@ -25,6 +25,8 @@ no_mlock = []
 malloc_stats = []
 
 [dependencies]
-log = "0.3.1"
 libc = "0.1.5"
 rand = "0.3.7"
+
+[dev-dependencies]
+log = "0.3.1"
