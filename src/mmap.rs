@@ -7,9 +7,10 @@ use libc::types::os::arch::c95::{c_int, size_t};
 use std::cmp;
 use std::env;
 use std::io;
-use std::num::ToPrimitive;
 use std::ptr;
 use std::sync::{Once, ONCE_INIT};
+
+use num::ToPrimitive;
 
 use utils;
 

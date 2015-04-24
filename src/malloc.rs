@@ -47,11 +47,11 @@ use std::fmt::{self, Debug, Formatter};
 use std::hash::{self, SipHasher};
 use std::iter;
 use std::mem;
-use std::num::ToPrimitive;
 use std::ops::{Deref, DerefMut};
 use std::ptr;
 use std::rc::Rc;
 
+use num::ToPrimitive;
 use rand::Rng;
 
 use mmap::{self, RangePos, Prot};
@@ -1435,12 +1435,12 @@ mod test {
     use std::cmp;
     use std::collections::HashSet;
     use std::env;
-    use std::num::ToPrimitive;
     use std::ptr;
     use std::sync::Future;
     use std::usize;
     use test::Bencher;
 
+    use num::ToPrimitive;
     use rand::{thread_rng, Rng};
 
     use mmap;

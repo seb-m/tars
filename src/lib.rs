@@ -20,9 +20,6 @@
 #![feature(unique)]
 #![cfg_attr(any(target_os = "linux", target_os = "android"), feature(io))]
 
-// Fixme: temp, see https://github.com/rust-lang/rust/issues/23542
-#![allow(trivial_casts)]
-
 #![cfg_attr(test, feature(test))]
 #![cfg_attr(test, feature(std_misc))]
 
@@ -32,6 +29,7 @@
 extern crate alloc;
 
 extern crate libc;
+extern crate num;
 extern crate rand;
 
 pub use allocator::DefaultBufferAllocator;

@@ -6,12 +6,12 @@ use std::fmt::{self, Debug, Formatter, LowerHex, UpperHex};
 use std::intrinsics;
 use std::marker::{Sync, PhantomData};
 use std::mem;
-use std::num::FromPrimitive;
 use std::ops::{Deref, DerefMut, Index, IndexMut,
                Range, RangeTo, RangeFrom, RangeFull};
 use std::ptr::{self, Unique};
 use std::slice;
 
+use num::FromPrimitive;
 use rand::Rng;
 
 use allocator::{Allocator, KeyAllocator, DefaultBufferAllocator};

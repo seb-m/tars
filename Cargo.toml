@@ -27,6 +27,7 @@ malloc_stats = []
 [dependencies]
 libc = "0.1.5"
 rand = "0.3.7"
+num = "0.1.24"
 
 [dev-dependencies]
 log = "0.3.1"
