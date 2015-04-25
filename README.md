@@ -20,6 +20,7 @@ Two data containers are currently implemented on top of this allocator. They fol
 
 ## Documentation
 
+* This code is expected to target and compile with the current master branch of `rustc`.
 * The generated documentation is available [here](http://seb.dbzteam.org/tars/).
 * [Talk](https://github.com/seb-m/tars/raw/master/rust-meetup-122014/rust-meetup-122014-tars.pdf) given on TARS at [Bay Area Rust Meetup](https://air.mozilla.org/bay-area-rust-meetup-december-2014/) held by Mozilla SF on 2014/12/18.
 * Take a look at [Curve41417.rs](https://github.com/seb-m/curve41417.rs) for an example of how this library can be used.
