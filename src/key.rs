@@ -1,6 +1,6 @@
 //! Protected key
 //!
-use std::cell::{self, Cell, Ref, RefCell, RefMut, BorrowState};
+use std::cell::{Cell, Ref, RefCell, RefMut, BorrowState};
 use std::fmt::{self, Debug};
 use std::ops::{Deref, DerefMut};
 use std::rc::Rc;
@@ -200,9 +200,9 @@ impl<'a, T: Copy, A: KeyAllocator> ProtKeyRead<'a, T, A> {
 
     /// Clone this instance.
     // FIXME: Currently does not implement `clone()` as it would interfere
-    //        with `ProtKey::clone()`. (see comment in `cell::clone_ref()`).
+    //        with `ProtKey::clone()`.
     pub fn clone_it(&self) -> ProtKeyRead<T, A> {
-        ProtKeyRead::new(cell::clone_ref(&self.ref_key), self.read_ctr.clone())
+        ProtKeyRead::new(Ref::clone(&self.ref_key), self.read_ctr.clone())
     }
 }
 
