@@ -17,11 +17,11 @@
 #![feature(alloc)]
 #![feature(page_size)]
 #![feature(std_misc)]
-#![feature(step_by)]
 #![feature(unique)]
 
 #![cfg_attr(test, feature(test))]
 #![cfg_attr(test, feature(std_misc))]
+#![cfg_attr(test, feature(step_by))]
 
 #[cfg(test)] extern crate test;
 #[cfg(test)] #[macro_use] extern crate log;
