@@ -12,15 +12,17 @@
 #![deny(stable_features)]
 #![feature(cell_extras)]
 #![feature(optin_builtin_traits)]
-#![feature(core)]
-#![feature(hash)]
 #![feature(alloc)]
 #![feature(page_size)]
-#![feature(std_misc)]
 #![feature(unique)]
+#![feature(core_intrinsics)]
+#![feature(heap_api)]
+#![feature(iter_arith)]
+#![feature(range_inclusive)]
+#![feature(borrow_state)]
+#![feature(hash_default)]
 
 #![cfg_attr(test, feature(test))]
-#![cfg_attr(test, feature(std_misc))]
 #![cfg_attr(test, feature(step_by))]
 
 #[cfg(test)] extern crate test;

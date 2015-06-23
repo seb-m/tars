@@ -1436,7 +1436,9 @@ mod test {
     use std::collections::HashSet;
     use std::env;
     use std::ptr;
-    use std::sync::Future;
+    use std::sync::{Arc, Barrier};
+    use std::sync::mpsc::channel;
+    use std::thread;
     use std::usize;
     use test::Bencher;
 
@@ -1920,15 +1922,21 @@ mod test {
     fn test_dir_addr() {
         let size = 10;
 
-        let mut futures: Vec<_> =
-            (0_usize..size).map(|_| Future::spawn(move || {
+        let barrier = Arc::new(Barrier::new(size));
+        let (tx, rx) = channel();
+        for _ in 0..size {
+            let bc = barrier.clone();
+            let tx = tx.clone();
+            thread::spawn(move|| {
+                bc.wait();
                 let d1 = super::thread_dir();
                 let d2 = d1.dir.borrow();
-                d2.dir as usize
-            })).collect();
+                tx.send(d2.dir as usize).unwrap();
+            });
+        }
 
         let addrs: HashSet<usize> =
-            futures.iter_mut().map(|ref mut ft| ft.get()).collect();
+            (0..size).map(|_| rx.recv().unwrap()).collect();
 
         assert_eq!(addrs.len(), size);
         assert!(!addrs.contains(&0));
