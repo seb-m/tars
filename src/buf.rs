@@ -28,7 +28,7 @@ unsafe fn alloc<A: Allocator, T>(count: usize) -> *mut T {
 
     // allocate
     let ptr = <A as Allocator>::allocate(size,
-                                         mem::min_align_of::<T>()) as *mut T;
+                                         mem::align_of::<T>()) as *mut T;
     assert!(!ptr.is_null());
     ptr
 }
@@ -38,7 +38,7 @@ unsafe fn dealloc<A: Allocator, T>(ptr: *mut T, count: usize) {
 
     // deallocate
     <A as Allocator>::deallocate(ptr as *mut u8, size,
-                                 mem::min_align_of::<T>());
+                                 mem::align_of::<T>());
 }
 
 
@@ -201,7 +201,7 @@ impl<T: Copy, A: Allocator> ProtBuf<T, A> {
     pub fn cast_to_slice<U>(&self) -> &[U] {
         let bytes_size = self.len_bytes();
         let dst_type_size = mem::size_of::<U>();
-        assert_eq!(mem::min_align_of::<T>(), mem::min_align_of::<U>());
+        assert_eq!(mem::align_of::<T>(), mem::align_of::<U>());
         assert!(bytes_size > 0 && dst_type_size > 0 &&
                 bytes_size >= dst_type_size && bytes_size % dst_type_size == 0);
         unsafe {
@@ -214,7 +214,7 @@ impl<T: Copy, A: Allocator> ProtBuf<T, A> {
     pub fn cast_to_slice_mut<U>(&mut self) -> &mut [U] {
         let bytes_size = self.len_bytes();
         let dst_type_size = mem::size_of::<U>();
-        assert_eq!(mem::min_align_of::<T>(), mem::min_align_of::<U>());
+        assert_eq!(mem::align_of::<T>(), mem::align_of::<U>());
         assert!(bytes_size > 0 && dst_type_size > 0 &&
                 bytes_size >= dst_type_size && bytes_size % dst_type_size == 0);
         unsafe {

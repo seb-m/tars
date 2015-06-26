@@ -159,7 +159,7 @@ fn fill_byte_dealloc() -> Option<u8> {
 
 unsafe fn dir_alloc() -> *mut u8 {
     mmap::allocate(mem::size_of::<Dir>(),
-                   mem::min_align_of::<Dir>(),
+                   mem::align_of::<Dir>(),
                    None,
                    Prot::ReadWrite,
                    RangePos::Rand)
@@ -172,7 +172,7 @@ unsafe fn dir_dealloc(ptr: *mut u8) {
 unsafe fn regions_alloc(count: usize) -> *mut u8 {
     let size = count.checked_mul(mem::size_of::<Region>()).unwrap();
     mmap::allocate(size,
-                   mem::min_align_of::<Region>(),
+                   mem::align_of::<Region>(),
                    None,
                    Prot::ReadWrite,
                    RangePos::Start)
