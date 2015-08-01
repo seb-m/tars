@@ -1438,7 +1438,6 @@ mod test {
     use libc;
     use std::cmp;
     use std::collections::HashSet;
-    use std::env;
     use std::ptr;
     use std::sync::{Arc, Barrier};
     use std::sync::mpsc::channel;
@@ -1450,6 +1449,7 @@ mod test {
     use rand::{thread_rng, Rng};
 
     use mmap;
+    use utils;
 
 
     fn print_dir_state() {
@@ -1478,7 +1478,8 @@ mod test {
 
         for i in 0_usize..NA {
             p[i] = unsafe {
-                let size = thread_rng().gen_range(0_usize, env::page_size() >> 1);
+                let size = thread_rng().gen_range(0_usize,
+                                                  utils::page_size() >> 1);
                 s[i] = size;
                 super::malloc(size, 0)
             };
@@ -1501,7 +1502,8 @@ mod test {
 
         for i in (0_usize..NA).step_by(16) {
             p[i] = unsafe {
-                let size = thread_rng().gen_range(0_usize, env::page_size() >> 1);
+                let size = thread_rng().gen_range(0_usize,
+                                                  utils::page_size() >> 1);
                 s[i] = size;
                 super::malloc(size, 0)
             };
@@ -1535,8 +1537,8 @@ mod test {
 
         for i in 0_usize..NA {
             p[i] = unsafe {
-                let size = thread_rng().gen_range((env::page_size() >> 1) + 1,
-                                                  env::page_size() << 3);
+                let size = thread_rng().gen_range((utils::page_size() >> 1) + 1,
+                                                  utils::page_size() << 3);
                 s[i] = size;
                 super::malloc(size, 0)
             };
@@ -1569,7 +1571,7 @@ mod test {
 
         for i in 0_usize..NA {
             p[i] = unsafe {
-                let size = thread_rng().gen_range(0, env::page_size() << 3);
+                let size = thread_rng().gen_range(0, utils::page_size() << 3);
                 s[i] = size;
                 super::malloc_key(size, 0)
             };
@@ -1602,7 +1604,8 @@ mod test {
 
         for i in 0_usize..NA {
             p[i] = unsafe {
-                let size = thread_rng().gen_range(0_usize, env::page_size() << 2);
+                let size = thread_rng().gen_range(0_usize,
+                                                  utils::page_size() << 2);
                 s[i] = size;
                 super::malloc(size, 0)
             };
@@ -1629,7 +1632,8 @@ mod test {
 
         for i in (0_usize..NA).step_by(16) {
             p[i] = unsafe {
-                let size = thread_rng().gen_range(0_usize, env::page_size() << 4);
+                let size = thread_rng().gen_range(0_usize,
+                                                  utils::page_size() << 4);
                 s[i] = size;
                 super::malloc(size, 0)
             };
@@ -1666,8 +1670,8 @@ mod test {
         let mut align = 1;
         let mut size;
 
-        while align < env::page_size() {
-            size = thread_rng().gen_range(0_usize, env::page_size() << 2);
+        while align < utils::page_size() {
+            size = thread_rng().gen_range(0_usize, utils::page_size() << 2);
 
             sptr = unsafe {
                 super::malloc(size, align)
@@ -1754,7 +1758,7 @@ mod test {
     #[should_panic(message = "invalid pointer")]
     fn test_free_invalid3() {
         unsafe {
-            let p = super::malloc(env::page_size(), 0);
+            let p = super::malloc(utils::page_size(), 0);
             super::free(p.offset(64));
         }
     }
@@ -1825,8 +1829,8 @@ mod test {
 
     #[test]
     fn test_realloc() {
-        let size1 = thread_rng().gen_range(0_usize, env::page_size() << 2);
-        let size2 = thread_rng().gen_range(0_usize, env::page_size() << 2);
+        let size1 = thread_rng().gen_range(0_usize, utils::page_size() << 2);
+        let size2 = thread_rng().gen_range(0_usize, utils::page_size() << 2);
 
         unsafe {
             let mut p1 = super::malloc(size1, 0);
@@ -1868,7 +1872,7 @@ mod test {
 
     #[test]
     fn test_realloc_zero() {
-        let size = thread_rng().gen_range(0_usize, env::page_size() << 2);
+        let size = thread_rng().gen_range(0_usize, utils::page_size() << 2);
 
         unsafe {
             let mut p1 = super::malloc(size, 0);
@@ -1895,10 +1899,10 @@ mod test {
     fn test_calloc() {
         unsafe {
             // Large
-            let mut p = super::calloc(1, env::page_size(), 0);
+            let mut p = super::calloc(1, utils::page_size(), 0);
             assert!(!p.is_null());
 
-            for i in 0_usize..env::page_size() {
+            for i in 0_usize..utils::page_size() {
                 assert_eq!(*p.offset(i as isize), 0);
             }
             super::free(p);
@@ -1961,10 +1965,10 @@ mod test {
             let s = super::malloc(256, 0);
             assert!(!s.is_null());
 
-            let d = heap::allocate(2 * env::page_size(), 0);
+            let d = heap::allocate(2 * utils::page_size(), 0);
             assert!(!d.is_null());
 
-            ptr::copy_nonoverlapping(s as *const u8, d, 2 * env::page_size());
+            ptr::copy_nonoverlapping(s as *const u8, d, 2 * utils::page_size());
         }
     }
 
@@ -1983,10 +1987,10 @@ mod test {
             let s = super::malloc(4096, 0);
             assert!(!s.is_null());
 
-            let d = heap::allocate(2 * env::page_size(), 0);
+            let d = heap::allocate(2 * utils::page_size(), 0);
             assert!(!d.is_null());
 
-            ptr::copy_nonoverlapping(s as *const u8, d, 2 * env::page_size());
+            ptr::copy_nonoverlapping(s as *const u8, d, 2 * utils::page_size());
         }
     }
 
@@ -2009,7 +2013,7 @@ mod test {
 
     #[bench]
     fn bench_page_alloc(b: &mut Bencher) {
-        let pagesize = env::page_size();
+        let pagesize = utils::page_size();
         b.iter(|| {
             unsafe {
                 let p = super::malloc(pagesize, 0);
@@ -2030,7 +2034,7 @@ mod test {
 
     #[bench]
     fn benck_libc_page_alloc(b: &mut Bencher) {
-        let pagesize = env::page_size();
+        let pagesize = utils::page_size();
         b.iter(|| {
             unsafe {
                 let p = libc::malloc(pagesize as libc::size_t) as *mut u8;
