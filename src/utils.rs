@@ -1,10 +1,18 @@
 //! Utilities
+use libc;
 use std::intrinsics;
 use std::mem;
 
 use rand::{self, Rng, ThreadRng};
 use rand::distributions::range::SampleRange;
 use rand::os::OsRng;
+
+
+pub fn page_size() -> usize {
+    unsafe {
+        libc::sysconf(libc::_SC_PAGESIZE) as usize
+    }
+}
 
 
 #[allow(dead_code)]

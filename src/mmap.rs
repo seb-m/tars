@@ -5,7 +5,6 @@ use libc::funcs::posix88::mman;
 use libc::types::common::c95::c_void;
 use libc::types::os::arch::c95::{c_int, size_t};
 use std::cmp;
-use std::env;
 use std::io;
 use std::ptr;
 use std::sync::{Once, ONCE_INIT};
@@ -36,7 +35,7 @@ pub fn page_size() -> usize {
 
     unsafe {
         ONCE.call_once(|| {
-            pagesize = env::page_size();
+            pagesize = utils::page_size();
         });
 
         pagesize

@@ -44,7 +44,7 @@
 use std::cell::RefCell;
 use std::cmp;
 use std::fmt::{self, Debug, Formatter};
-use std::hash::{self, SipHasher};
+use std::hash::{Hash, SipHasher, Hasher};
 use std::iter;
 use std::mem;
 use std::ops::{Deref, DerefMut};
@@ -524,8 +524,12 @@ impl Dir {
 
     #[inline]
     fn object_to_region_index(&self, object: *mut u8) -> usize {
-        hash::hash::<_, SipHasher>(&(mmap::mask_pointer(object) as usize))
-            as usize & self.region_mask()
+        let mut s = SipHasher::new_with_keys(0, 0);
+        (mmap::mask_pointer(object) as usize).hash(&mut s);
+        s.finish() as usize & self.region_mask()
+
+//        hash::hash::<_, SipHasher>(&(mmap::mask_pointer(object) as usize))
+  //          as usize & self.region_mask()
     }
 
     fn region_pick(&self, object: *mut u8) -> usize {
