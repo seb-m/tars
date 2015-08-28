@@ -1,0 +1,1 @@
+initSidebarItems({"mod":[["allocator","Memory allocators"],["malloc","Protected memory allocation"]],"struct":[["ProtBuf","A protected Buffer"],["ProtKey","A protected key"],["ProtKeyRead","An RAII protected key with read access"],["ProtKeyWrite","An RAII protected key with write access"]],"type":[["ProtBuf8","Buffer of bytes"],["ProtKey8","Key of bytes"]]});

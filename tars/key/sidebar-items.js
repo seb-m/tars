@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["ProtKey","A protected key"],["ProtKeyRead","An RAII protected key with read access"],["ProtKeyWrite","An RAII protected key with write access"]],"type":[["ProtKey8","Key of bytes"]]});
